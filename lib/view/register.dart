@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-// import 'package:a_salon/view/login.dart';
+import 'package:a_salon/view/login.dart';
 import 'package:a_salon/component/form_component.dart';
 
 class RegisterView extends StatefulWidget {
@@ -113,8 +113,8 @@ class _RegisterViewState extends State<RegisterView> {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (_) => RegisterView(
-                                  // data: formData,
+                              builder: (_) => LoginView(
+                                  data: formData,
                                   )));
                     }
                   },
