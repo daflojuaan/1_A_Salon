@@ -14,8 +14,20 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: LoginView(),
-    );
+    return MaterialApp(
+      home: Scaffold(
+        body: Center(
+          child: ElevatedButton(
+            onPressed: () {
+              print('Tekan');
+            },
+            child: const Text(
+              'Cobain',
+              style: TextStyle(color: Color.fromARGB(255, 138, 97, 82)),
+            ),
+          ),
+        ),
+      ),
+
   }
 }
