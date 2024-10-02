@@ -1,3 +1,5 @@
+
+import 'package:a_salon/View/listreservasi.dart';
 import 'package:a_salon/view/register.dart';
 import 'package:flutter/material.dart';
 import 'package:a_salon/view/home.dart';
@@ -12,9 +14,7 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-
       home: LoginView(),
-
     );
   }
 }
