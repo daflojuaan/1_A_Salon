@@ -126,4 +126,6 @@ class PersonDetail extends StatelessWidget {
       );
     });
   }
+
 }
+
