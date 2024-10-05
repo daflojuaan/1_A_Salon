@@ -1,5 +1,5 @@
-import 'package:a_salon/view/register.dart';
 import 'package:flutter/material.dart';
+import 'package:a_salon/view/login.dart';
 
 void main() {
   runApp(const MainApp());

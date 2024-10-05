@@ -21,13 +21,22 @@ class _RegisterViewState extends State<RegisterView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255,0,31,63),
+      backgroundColor: const Color.fromARGB(255, 0, 31, 63),
       body: SafeArea(
         child: Form(
           key: _formKey,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              Image.asset('images/logo putih.jpg', width: 300),
+                const Text("REGISTER",
+                    style: TextStyle(
+                      fontSize: 40,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      fontFamily: 'Poppins',
+                      height: 2,
+                    )),
               inputForm(((p0) {
                 if (p0 == null || p0.isEmpty) {
                   return "Nama Tidak Boleh Kosong";
@@ -38,7 +47,7 @@ class _RegisterViewState extends State<RegisterView> {
                   hintTxt: "Nama",
                   helperTxt: "Gabriel Hazel Irza Adhiputra",
                   iconData: Icons.person_2),
-              inputForm(((p0) {
+              inputForm((p0) {
                 if (p0 == null || p0.isEmpty) {
                   return 'Username Tidak Boleh Kosong';
                 }
@@ -46,10 +55,10 @@ class _RegisterViewState extends State<RegisterView> {
                   return 'Tidak Boleh menggunakan kata kasar';
                 }
                 return null;
-              }),
+              },
                   controller: usernameController,
                   hintTxt: "Username",
-                  helperTxt: "Hazelnutlatte300404",
+                  helperTxt: "Ucup Surucup",
                   iconData: Icons.person),
               inputForm(((p0) {
                 if (p0 == null || p0.isEmpty) {
@@ -62,11 +71,11 @@ class _RegisterViewState extends State<RegisterView> {
               }),
                   controller: emailController,
                   hintTxt: "Email",
-                  helperTxt: "hazel@gmail.com",
+                  helperTxt: "ucup@gmail.com",
                   iconData: Icons.email),
               inputForm(((p0) {
                 if (p0 == null || p0.isEmpty) {
-                  return 'Password tidak boleh kosong';
+                  return 'Passowrd tidak boleh kosong';
                 }
                 if (p0.length < 5) {
                   return 'Password minimal 5 digit';
@@ -75,7 +84,7 @@ class _RegisterViewState extends State<RegisterView> {
               }),
                   controller: passwordController,
                   hintTxt: "Password",
-                  helperTxt: "passwordHazel@1234",
+                  helperTxt: "xxxxxxx",
                   iconData: Icons.password,
                   password: true),
               inputForm(((p0) {
@@ -88,17 +97,16 @@ class _RegisterViewState extends State<RegisterView> {
                   hintTxt: "No Telp",
                   helperTxt: "082123456789",
                   iconData: Icons.phone_android),
-              inputForm(
-                ((p0) {
-                  if (p0 == null || p0.isEmpty)
-                  {
-                    return "Jenis Kelamin tidak boleh kosong";
-                  }
-                  if (p0.toLowerCase() != "laki-laki" || p0.toLowerCase() != "Perempuan")
-                  {
-                    return "Jenis Kelamin hanya laki-laki dan perempuan";
-                  }
-                }),
+              inputForm(((p0) {
+                if (p0 == null || p0.isEmpty) {
+                  return "Jenis Kelamin tidak boleh kosong";
+                }
+                // if (p0.toLowerCase() != "Laki-laki" &&
+                //     p0.toLowerCase() != "Perempuan") {
+                //   return "Jenis Kelamin hanya laki-laki dan perempuan";
+                // }
+                return null;
+              }),
                   controller: genderController,
                   hintTxt: "Jenis Kelamin",
                   helperTxt: "Laki-laki / Perempuan",
@@ -106,19 +114,30 @@ class _RegisterViewState extends State<RegisterView> {
               ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
-                      Map<String, dynamic> formData = {};
-                      formData['username'] = usernameController.text;
-                      formData['password'] = passwordController.text;
+                      Map<String, dynamic> loginData = {};
+                      loginData['username'] = usernameController.text;
+                      loginData['password'] = passwordController.text;
+
+                      Map<String, dynamic> profileData = {};
+                      profileData['nama'] = namaController.text;
+                      profileData['username'] = usernameController.text;
+                      profileData['email'] = emailController.text;
+                      profileData['notelp'] = notelpController.text;
+                      profileData['gender'] = genderController.text;
 
                       Navigator.push(
                           context,
                           MaterialPageRoute(
                               builder: (_) => LoginView(
-                                  data: formData,
+                                    loginData: loginData,
+                                    profileData: profileData,
                                   )));
+                      
                     }
                   },
-                  child: const Text('Register'))
+                  child: const Text('Register',
+                        style:
+                            TextStyle(color: Color.fromARGB(255, 0, 31, 63))))
             ],
           ),
         ),
