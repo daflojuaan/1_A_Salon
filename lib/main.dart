@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:a_salon/view/login.dart';
 
+
 void main() {
   runApp(const MainApp());
 }
@@ -10,8 +11,9 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: LoginView(),
+    return MaterialApp(
+      return const MaterialApp(
+      home: LoginView()
     );
   }
 }
