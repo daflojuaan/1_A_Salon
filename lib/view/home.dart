@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:a_salon/view/tampilanProfile.dart';
-import 'package:a_salon/view/reservasi.dart';
+import 'package:a_salon/view/view_list.dart';
 
 class HomeView extends StatefulWidget {
   final Map<String, dynamic>? profileData;
