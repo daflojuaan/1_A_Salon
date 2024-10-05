@@ -4,8 +4,10 @@ import 'package:a_salon/view/register.dart';
 import 'package:a_salon/component/form_component.dart';
 
 class LoginView extends StatefulWidget {
-  final Map? data;
-  const LoginView({super.key, this.data});
+  final Map<String, dynamic>? loginData;
+  final Map<String, dynamic>? profileData;
+
+  const LoginView({super.key, this.loginData, this.profileData,});
 
   @override
   State<LoginView> createState() => _LoginViewState();
@@ -14,13 +16,11 @@ class LoginView extends StatefulWidget {
 class _LoginViewState extends State<LoginView> {
   final _formKey = GlobalKey<FormState>();
 
-  get style => null;
   @override
   Widget build(BuildContext context) {
     TextEditingController usernameController = TextEditingController();
     TextEditingController passwordController = TextEditingController();
 
-    Map? dataForm = widget.data;
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 0, 31, 63),
       body: SafeArea(
@@ -29,48 +29,53 @@ class _LoginViewState extends State<LoginView> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text("WELCOME",
-                  style: TextStyle(
-                    fontSize: 40,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    fontFamily: 'Poppins',
-                  )),
+              Image.asset(
+                'images/logo putih.jpg',
+                width: 300,
+              ),
+              const Text(
+                "MASUK",
+                style: TextStyle(
+                  fontSize: 40,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  fontFamily: 'Poppins',
+                ),
+              ),
               inputForm((p0) {
                 if (p0 == null || p0.isEmpty) {
-                  return "Username tidak boleh kosong";
+                  return "username tidak boleh kosong";
                 }
                 return null;
               },
                   controller: usernameController,
                   hintTxt: "Username",
-                  helperTxt: "Inputkan Username yang telah terdaftar",
-                  iconData: Icons.person,
-                  style: const TextStyle(color: Colors.white)),
+                  helperTxt: "Inputkan User yang telah didaftar",
+                  iconData: Icons.person),
               inputForm((p0) {
                 if (p0 == null || p0.isEmpty) {
-                  return "Password tidak boleh kosong";
+                  return "password kosong";
                 }
                 return null;
               },
+                  password: true,
                   controller: passwordController,
                   hintTxt: "Password",
-                  helperTxt: "Inputkan Password",
-                  iconData: Icons.password,
-                  password: true),
+                  helperTxt: "Inputkan Passwrod",
+                  iconData: Icons.password),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   ElevatedButton(
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
-                          if (dataForm!['username'] ==
-                                  usernameController.text &&
-                              dataForm['password'] == passwordController.text) {
+                          if (widget.loginData != null &&
+                            widget.loginData!['username'] == usernameController.text &&
+                            widget.loginData!['password'] == passwordController.text) {
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) => const HomeView()));
+                                    builder: (_) => HomeView(profileData: widget.profileData,)));
                           } else {
                             showDialog(
                               context: context,
@@ -98,14 +103,13 @@ class _LoginViewState extends State<LoginView> {
                       },
                       child: const Text('Login')),
                   TextButton(
-                    onPressed: () {
-                      Map<String, dynamic> formData = {};
-                      formData['username'] = usernameController.text;
-                      formData['password'] = passwordController.text;
-                      pushRegister(context);
-                    },
-                    child: const Text('Belum Punya Akun?'),
-                  )
+                      onPressed: () {
+                        Map<String, dynamic> formData = {};
+                        formData['username'] = usernameController.text;
+                        formData['password'] = passwordController.text;
+                        pushRegister(context);
+                      },
+                      child: const Text('Belum punya akun ?')),
                 ],
               ),
             ],
@@ -114,13 +118,8 @@ class _LoginViewState extends State<LoginView> {
       ),
     );
   }
-
   void pushRegister(BuildContext context) {
     Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const RegisterView(),
-      ),
-    );
+      context,MaterialPageRoute(builder: (_) => const RegisterView(),),);
   }
 }
