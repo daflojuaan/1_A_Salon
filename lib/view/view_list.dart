@@ -240,4 +240,6 @@ class _ReservasiPageState extends State<ReservasiView> {
           onTap: _onItemTapped,
         ));
   }
+
 }
+
