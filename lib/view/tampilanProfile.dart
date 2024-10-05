@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:a_salon/view/home.dart';
+import 'package:a_salon/view/view_list.dart';
+import 'package:a_salon/data/people.dart';
+import 'package:a_salon/view/register.dart';
 
 class ProfileView extends StatefulWidget {
   final Map<String, dynamic>? user;
 
   const ProfileView({super.key, this.user});
-  
 
   @override
   _ProfileViewState createState() => _ProfileViewState();
@@ -60,8 +63,8 @@ class _ProfileViewState extends State<ProfileView> {
                 children: [
                   CircleAvatar(
                     radius: 72,
-                    backgroundImage:
-                        NetworkImage('https://akcdn.detik.net.id/visual/2023/10/10/reaksi-jefri-nichol-ditanya-soal-hijrah-usai-ikut-kajian-bareng-abidzar-1_43.jpeg?w=650&q=90'),
+                    backgroundImage: NetworkImage(
+                        'https://akcdn.detik.net.id/visual/2023/10/10/reaksi-jefri-nichol-ditanya-soal-hijrah-usai-ikut-kajian-bareng-abidzar-1_43.jpeg?w=650&q=90'),
                   ),
                   const SizedBox(height: 10),
                   Text(
