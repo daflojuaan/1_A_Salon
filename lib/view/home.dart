@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:a_salon/view/tampilanProfile.dart';
+import 'package:a_salon/view/listreservasi.dart';
+import 'package:a_salon/view/login.dart';
 import 'package:a_salon/view/view_list.dart';
 
 class HomeView extends StatefulWidget {
