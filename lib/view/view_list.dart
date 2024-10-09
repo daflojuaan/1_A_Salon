@@ -27,7 +27,7 @@ class _ReservasiPageState extends State<ReservasiView> {
   String? _selectedService;
   String? _selectedTime;
 
-  final List<String> outlets = ['Babarsari', 'Gejayan'];
+  final List<String> outlets = ['Babarsary', 'Gejayan'];
   final List<String> services = [
     'Haircut',
     'Korean Perm',
