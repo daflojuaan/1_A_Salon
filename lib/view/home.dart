@@ -239,7 +239,7 @@ class _HomeViewState extends State<HomeView> {
           const Padding(
             padding: EdgeInsets.all(10.0),
             child: Text(
-              'Promo HairCut',
+              '-Promo HairCut-',
               style: TextStyle(color: Colors.white, fontSize: 20),
             ),
           ),
