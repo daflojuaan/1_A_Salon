@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:a_salon/view/tampilanProfile.dart';
-import 'package:a_salon/view/listreservasi.dart';
+import 'package:a_salon/view/reservasiList.dart';
 import 'package:a_salon/view/login.dart';
-import 'package:a_salon/view/view_list.dart';
 
 class HomeView extends StatefulWidget {
   final Map<String, dynamic>? profileData;
@@ -27,8 +26,7 @@ class _HomeViewState extends State<HomeView> {
   void initState() {
     super.initState();
     _widgetOptions = <Widget>[
-      const Center(
-      ),
+      const Center(),
       const Center(),
       ProfileView(user: widget.profileData),
     ];

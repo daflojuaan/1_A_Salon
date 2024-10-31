@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:a_salon/view/home.dart';
-import 'package:a_salon/view/view_list.dart';
-import 'package:a_salon/data/people.dart';
+import 'package:a_salon/view/reservasiList.dart';
 import 'package:a_salon/view/register.dart';
 
 class ProfileView extends StatefulWidget {
