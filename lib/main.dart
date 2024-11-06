@@ -1,3 +1,4 @@
+import 'package:a_salon/view/topup_saldo.dart';
 import 'package:flutter/material.dart';
 import 'package:a_salon/view/login_page.dart';
 import 'package:a_salon/view/register_page.dart';
@@ -22,13 +23,14 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: '/',
       routes: {
-        '/': (context) => const LoginPage(),// Halaman utama
-        '/register': (context) => const RegisterPage(),// Halaman registrasi
-        '/forgot-password': (context) => const ForgotPasswordPage(), // Halaman pemulihan kata sandi
-        '/login': (context) => const LoginPage(), // Halaman login
-        '/scan' : (context) => const ScanPage(), // Halaman scan     
+        '/': (context) => const LoginPage(),
+        '/register': (context) => const RegisterPage(),
+        '/forgot-password': (context) => const ForgotPasswordPage(),
+        '/login': (context) => const LoginPage(),
+        '/scan' : (context) => const ScanPage(),    
         '/reservation': (context) => const ReservationPage(),
-        '/payment': (context) => const PaymentPage(),// Halaman pembayaran
+        '/payment': (context) => const PaymentPage(),
+        '/topup': (context) => const TopUpSaldoPage(),
       },
     );
   }
