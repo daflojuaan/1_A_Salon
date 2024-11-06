@@ -14,7 +14,6 @@ dependencies:
   camera: ^0.10.5+2
   image_picker: ^0.8.4+8
   mobile_scanner: ^3.5.5
-  mailer: ^5.0.0
 
 dev_dependencies:
   flutter_test:

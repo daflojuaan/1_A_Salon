@@ -152,3 +152,12 @@ class _TopUpSaldoPageState extends State<TopUpSaldoPage> {
     );
   }
 }
+  State<TopUpSaldoPage> createState() => _TopUpSaldoPageState();
+}
+
+class _TopUpSaldoPageState extends State<TopUpSaldoPage> {
+  @override
+  Widget build(BuildContext context) {
+    return const Placeholder();
+  }
+}
