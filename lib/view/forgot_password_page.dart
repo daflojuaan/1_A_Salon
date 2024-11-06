@@ -74,4 +74,3 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     return const Placeholder();
   }
 }
-
