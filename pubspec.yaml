@@ -4,11 +4,17 @@ publish_to: 'none'
 version: 0.1.0
 
 environment:
-  sdk: ^3.5.1
+  sdk: ^3.5.4
 
 dependencies:
   flutter:
     sdk: flutter
+  sqflite: ^2.0.0
+  path: ^1.8.0
+  camera: ^0.10.5+2
+  image_picker: ^0.8.4+8
+  mobile_scanner: ^3.5.5
+  mailer: ^5.0.0
 
 dev_dependencies:
   flutter_test:
@@ -17,3 +23,9 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - lib/asset/logo putih.png
+    - lib/asset/logo biru.png
+    - lib/asset/layanan.jpg
+    - lib/asset/promo 1.jpg
+    - lib/asset/promo 2.jpg
