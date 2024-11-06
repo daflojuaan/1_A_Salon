@@ -15,3 +15,6 @@ class PaymentPage extends StatelessWidget {
     );
   }
 }
+    return const Placeholder();
+  }
+}
