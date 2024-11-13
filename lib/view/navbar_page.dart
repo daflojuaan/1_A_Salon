@@ -22,7 +22,7 @@ class _HomePageState extends State<NavbarPage> {
   void initState() {
     super.initState();
     _pages = [
-      const HomePage(),
+      HomePage(user: widget.user),
       const ScanPage(),
       ProfileScreen(user: widget.user),
     ];
@@ -61,24 +61,3 @@ class _HomePageState extends State<NavbarPage> {
   }
 }
 
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text('Welcome to the Home Screen!'),
-    );
-  }
-}
-
-class ScanScreen extends StatelessWidget {
-  const ScanScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text('This is the Scan Screen.'),
-    );
-  }
-}

@@ -4,39 +4,19 @@ import 'package:a_salon/view/user.dart';
 import 'topup_saldo.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final User user;
+  const HomePage({super.key, required this.user});
 
   @override
   _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  String username = "Loading.....";
   bool isSaldoVisible = false;
 
   @override
   void initState() {
     super.initState();
-    _loadUsername();
-  }
-
-  Future<void> _loadUsername() async {
-    final String? args = ModalRoute.of(context)?.settings.arguments as String?;
-
-    if (args != null && args.isNotEmpty) {
-      setState(() {
-        username = args;
-      });
-    } else {
-      final dbHelper = DatabaseHelper();
-      final user = await dbHelper.getUserByUsername("username_anda");
-
-      if (user != null) {
-        setState(() {
-          username = user.username;
-        });
-      }
-    }
   }
 
   @override
@@ -49,9 +29,9 @@ class _HomePageState extends State<HomePage> {
         title: Image.asset('lib/asset/logo biru.png', height: 45),
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications_outlined, color: Color(0xFF1B3358)),
-            onPressed: () {
-            },
+            icon: const Icon(Icons.notifications_outlined,
+                color: Color(0xFF1B3358)),
+            onPressed: () {},
           ),
         ],
       ),
@@ -71,7 +51,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               Text(
-                username,
+                widget.user.username,
                 style: const TextStyle(
                   fontSize: 18,
                   color: Color(0xFF1B3358),
@@ -132,7 +112,8 @@ class _HomePageState extends State<HomePage> {
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(20),
                                 ),
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 8),
                               ),
                               child: const Text(
                                 '+ Top Up Saldo',
@@ -194,7 +175,9 @@ class _HomePageState extends State<HomePage> {
                   _buildMenuButton(
                     icon: Icons.store_outlined,
                     label: 'Barber',
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/barber');
+                    },
                   ),
                 ],
               ),
@@ -205,7 +188,10 @@ class _HomePageState extends State<HomePage> {
                     context,
                     'Promo Terbaru',
                     [
-                      {'title': 'Diskon 20% untuk Haircut', 'image': 'lib/asset/promo 1.jpg'},
+                      {
+                        'title': 'Diskon 20% untuk Haircut',
+                        'image': 'lib/asset/promo 1.jpg'
+                      },
                     ],
                   ),
                   const SizedBox(height: 16),
@@ -213,7 +199,10 @@ class _HomePageState extends State<HomePage> {
                     context,
                     'Promo Khusus',
                     [
-                      {'title': 'Potongan Harga untuk Paket', 'image': 'lib/asset/promo 2.jpg'},
+                      {
+                        'title': 'Potongan Harga untuk Paket',
+                        'image': 'lib/asset/promo 2.jpg'
+                      },
                     ],
                   ),
                 ],
@@ -264,7 +253,8 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildPromoSection(BuildContext context, String title, List<Map<String, String>> promoItems) {
+  Widget _buildPromoSection(BuildContext context, String title,
+      List<Map<String, String>> promoItems) {
     return Container(
       height: 200,
       width: MediaQuery.of(context).size.width * 0.9,
@@ -274,7 +264,8 @@ class _HomePageState extends State<HomePage> {
         children: [
           Padding(
             padding: const EdgeInsets.all(10.0),
-            child: Text('-$title-', style: const TextStyle(color: Colors.white, fontSize: 20)),
+            child: Text('-$title-',
+                style: const TextStyle(color: Colors.white, fontSize: 20)),
           ),
           Expanded(
             child: Center(
@@ -305,12 +296,5 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
     );
-  State<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  @override
-  Widget build(BuildContext context) {
-    return const Placeholder();
   }
 }
