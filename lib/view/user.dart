@@ -15,6 +15,7 @@ class User {
     required this.gender,
   });
 
+  // Convert User object to a Map for database insertion
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -26,6 +27,7 @@ class User {
     };
   }
 
+  // Convert a Map into a User object
   static User fromMap(Map<String, dynamic> map) {
     return User(
       id: map['id'],
@@ -34,6 +36,24 @@ class User {
       email: map['email'],
       phone: map['phone'],
       gender: map['gender'],
+    );
+  }
+
+  // Method to update the user details
+  User copyWith({
+    String? username,
+    String? password,
+    String? email,
+    String? phone,
+    String? gender,
+  }) {
+    return User(
+      id: this.id,
+      username: username ?? this.username,
+      password: password ?? this.password,
+      email: email ?? this.email,
+      phone: phone ?? this.phone,
+      gender: gender ?? this.gender,
     );
   }
 }
