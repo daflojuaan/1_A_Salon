@@ -4,39 +4,19 @@ import 'package:a_salon/view/user.dart';
 import 'topup_saldo.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final User user;
+  const HomePage({super.key, required this.user});
 
   @override
   _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  String username = "Loading.....";
   bool isSaldoVisible = false;
 
   @override
   void initState() {
     super.initState();
-    _loadUsername();
-  }
-
-  Future<void> _loadUsername() async {
-    final String? args = ModalRoute.of(context)?.settings.arguments as String?;
-
-    if (args != null && args.isNotEmpty) {
-      setState(() {
-        username = args;
-      });
-    } else {
-      final dbHelper = DatabaseHelper();
-      final user = await dbHelper.getUserByUsername("username_anda");
-
-      if (user != null) {
-        setState(() {
-          username = user.username;
-        });
-      }
-    }
   }
 
   @override
@@ -71,7 +51,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               Text(
-                username,
+                widget.user.username,
                 style: const TextStyle(
                   fontSize: 18,
                   color: Color(0xFF1B3358),
@@ -195,7 +175,9 @@ class _HomePageState extends State<HomePage> {
                   _buildMenuButton(
                     icon: Icons.store_outlined,
                     label: 'Barber',
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/barber');
+                    },
                   ),
                 ],
               ),
