@@ -521,14 +521,14 @@ class _ReservationPageState extends State<ReservationPage> {
               ? (activeReservations.isEmpty
                   ? Center(
                       child: Image.asset(
-                        'images/reservasi.png',
+                        'asset/reservasi.png',
                         height: 300,
                       ),
                     )
                   : _buildActiveReservations())
               : Center(
                   child: Image.asset(
-                    'images/reservasi.png',
+                    'asset/reservasi.png',
                     height: 300,
                   ),
                 ),
