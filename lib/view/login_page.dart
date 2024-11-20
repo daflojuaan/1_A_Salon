@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:a_salon/database/database_helper.dart';
-import 'package:a_salon/view/navbar_page.dart';
+import 'package:a_salon/view/home_page.dart';
 import 'forgot_password_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -23,7 +23,7 @@ class _LoginPageState extends State<LoginPage> {
     if (user != null) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => NavbarPage(user: user)),
+        MaterialPageRoute(builder: (context) => HomePage(user: user)),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -39,16 +39,17 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: const Color(0xFF001f3f),
       body: Center(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               // Add image at the top
               Image.asset(
-                'lib/asset/cukur(putih).png', // Make sure to add your image in the assets folder and update pubspec.yaml
+                'lib/asset/logo putih.png', // Make sure to add your image in the assets folder and update pubspec.yaml
                 width: 400, // Adjust width as needed
                 height: 150, // Adjust height as needed
               ),

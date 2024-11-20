@@ -6,6 +6,8 @@ import 'package:a_salon/view/forgot_password_page.dart';
 import 'package:a_salon/view/scan_page.dart';
 import 'package:a_salon/view/payment_page.dart';
 import 'package:a_salon/view/reservation_page.dart';
+import 'package:a_salon/view/barber_page.dart';
+import 'package:a_salon/view/notification_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -31,6 +33,8 @@ class MyApp extends StatelessWidget {
         '/reservation': (context) => const ReservationPage(),
         '/payment': (context) => const PaymentPage(),
         '/topup': (context) => const TopUpSaldoPage(),
+        '/barber': (context) => const BarberProfilePage(),
+        '/notification': (context) => const NotificationPage(),
       },
     );
   }

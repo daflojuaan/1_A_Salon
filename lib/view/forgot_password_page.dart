@@ -56,21 +56,12 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
             if (_password != null)
               Text(
                 'Your password is: $_password',
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
           ],
         ),
       ),
     );
-  }
-}
-
-  State<ForgotPasswordPage> createState() => _ForgotPasswordPageState();
-}
-
-class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
-  @override
-  Widget build(BuildContext context) {
-    return const Placeholder();
   }
 }
