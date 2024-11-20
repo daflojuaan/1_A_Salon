@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:a_salon/database/database_helper.dart';
 import 'package:a_salon/view/user.dart';
 import 'topup_saldo.dart';
+import 'package:a_salon/view/notification_page.dart';
 
 class HomePage extends StatefulWidget {
   final User user;
@@ -45,8 +46,15 @@ class _HomePageState extends State<HomePage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_outlined,
-                color: Color(0xFF1B3358)),
-            onPressed: () {},
+            color: Color(0xFF1B3358)),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const NotificationPage(),
+                ),
+              );
+            },
           ),
         ],
       ),
