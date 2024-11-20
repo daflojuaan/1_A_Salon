@@ -1,3 +1,5 @@
+import 'package:a_salon/view/profile_page.dart';
+import 'package:a_salon/view/scan_page.dart';
 import 'package:flutter/material.dart';
 import 'package:a_salon/database/database_helper.dart';
 import 'package:a_salon/view/user.dart';
@@ -12,7 +14,14 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  int _selectedIndex = 0;
   bool isSaldoVisible = false;
+
+  void _onItemTapped(int index){
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
 
   @override
   void initState() {
@@ -21,6 +30,12 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final List<Widget> _pages = [
+      _buildHomePage(context),
+      const ScanPage(),
+      ProfileScreen(user: widget.user),
+    ];
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -35,180 +50,206 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'SELAMAT DATANG,',
+      body: _pages[_selectedIndex], // Menampilkan halaman aktif
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.qr_code_scanner),
+            label: 'Scan',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+        selectedItemColor: Colors.blue,
+        unselectedItemColor: Colors.grey,
+        backgroundColor: Colors.white,
+        type: BottomNavigationBarType.fixed,
+      ),
+    );
+  }
+
+  Widget _buildHomePage(BuildContext context) {
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'SELAMAT DATANG,',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF1B3358),
+                letterSpacing: 0.5,
+              ),
+            ),
+            Text(
+              widget.user.username,
+              style: const TextStyle(
+                fontSize: 18,
+                color: Color(0xFF1B3358),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: const Color(0xFF2B5585),
+                borderRadius: BorderRadius.circular(15),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Text(
+                    'Saldo',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        isSaldoVisible ? 'Rp. 1.000.000' : 'Rp. *****',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Row(
+                        children: [
+                          IconButton(
+                            icon: Icon(
+                              isSaldoVisible
+                                  ? Icons.visibility
+                                  : Icons.visibility_off,
+                              color: Colors.white,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                isSaldoVisible = !isSaldoVisible;
+                              });
+                            },
+                          ),
+                          ElevatedButton(
+                            onPressed: () {
+                              Navigator.pushNamed(context, '/topup');
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFFFC107),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 8),
+                            ),
+                            child: const Text(
+                              '+ Top Up Saldo',
+                              style: TextStyle(
+                                color: Colors.black87,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: const [
+                      Text(
+                        'Point',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 14,
+                        ),
+                      ),
+                      Text(
+                        'Bonus',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 30),
+            const Center(
+              child: Text(
+                'Menu',
                 style: TextStyle(
                   fontSize: 20,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.bold,
                   color: Color(0xFF1B3358),
-                  letterSpacing: 0.5,
                 ),
               ),
-              Text(
-                widget.user.username,
-                style: const TextStyle(
-                  fontSize: 18,
-                  color: Color(0xFF1B3358),
-                  fontWeight: FontWeight.w500,
+            ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildMenuButton(
+                  icon: Icons.calendar_today_outlined,
+                  label: 'Reservasi',
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/reservation');
+                  },
                 ),
-              ),
-              const SizedBox(height: 20),
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2B5585),
-                  borderRadius: BorderRadius.circular(15),
+                _buildMenuButton(
+                  icon: Icons.store_outlined,
+                  label: 'Barber',
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/barber');
+                  },
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const Text(
-                      'Saldo',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          isSaldoVisible ? 'Rp. 1.000.000' : 'Rp. *****',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Row(
-                          children: [
-                            IconButton(
-                              icon: Icon(
-                                isSaldoVisible
-                                    ? Icons.visibility
-                                    : Icons.visibility_off,
-                                color: Colors.white,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  isSaldoVisible = !isSaldoVisible;
-                                });
-                              },
-                            ),
-                            ElevatedButton(
-                              onPressed: () {
-                                Navigator.pushNamed(context, '/topup');
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFFFC107),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 8),
-                              ),
-                              child: const Text(
-                                '+ Top Up Saldo',
-                                style: TextStyle(
-                                  color: Colors.black87,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: const [
-                        Text(
-                          'Point',
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 14,
-                          ),
-                        ),
-                        Text(
-                          'Bonus',
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
+              ],
+            ),
+            Column(
+              children: [
+                const SizedBox(height: 30),
+                _buildPromoSection(
+                  context,
+                  'Promo Terbaru',
+                  [
+                    {
+                      'title': 'Diskon 20% untuk Haircut',
+                      'image': 'lib/asset/promo 1.jpg'
+                    },
                   ],
                 ),
-              ),
-              const SizedBox(height: 30),
-              const Center(
-                child: Text(
-                  'Menu',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1B3358),
-                  ),
+                const SizedBox(height: 16),
+                _buildPromoSection(
+                  context,
+                  'Promo Khusus',
+                  [
+                    {
+                      'title': 'Potongan Harga untuk Paket',
+                      'image': 'lib/asset/promo 2.jpg'
+                    },
+                  ],
                 ),
-              ),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildMenuButton(
-                    icon: Icons.calendar_today_outlined,
-                    label: 'Reservasi',
-                    onPressed: () {
-                      Navigator.pushNamed(context, '/reservation');
-                    },
-                  ),
-                  _buildMenuButton(
-                    icon: Icons.store_outlined,
-                    label: 'Barber',
-                    onPressed: () {
-                      Navigator.pushNamed(context, '/barber');
-                    },
-                  ),
-                ],
-              ),
-              Column(
-                children: [
-                  const SizedBox(height: 30),
-                  _buildPromoSection(
-                    context,
-                    'Promo Terbaru',
-                    [
-                      {
-                        'title': 'Diskon 20% untuk Haircut',
-                        'image': 'lib/asset/promo 1.jpg'
-                      },
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  _buildPromoSection(
-                    context,
-                    'Promo Khusus',
-                    [
-                      {
-                        'title': 'Potongan Harga untuk Paket',
-                        'image': 'lib/asset/promo 2.jpg'
-                      },
-                    ],
-                  ),
-                ],
-              )
-            ],
-          ),
+              ],
+            )
+          ],
         ),
       ),
     );
