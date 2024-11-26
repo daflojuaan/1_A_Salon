@@ -4,7 +4,7 @@ publish_to: 'none'
 version: 0.1.0
 
 environment:
-  sdk: ^3.5.4
+  sdk: ^3.5.3
 
 dependencies:
   flutter:
@@ -28,3 +28,4 @@ flutter:
     - lib/asset/layanan.jpg
     - lib/asset/promo 1.jpg
     - lib/asset/promo 2.jpg
+    - lib/asset/reservasi.png

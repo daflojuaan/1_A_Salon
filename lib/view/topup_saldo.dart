@@ -10,7 +10,7 @@ class TopUpSaldoPage extends StatefulWidget {
 class _TopUpSaldoPageState extends State<TopUpSaldoPage> {
   List<int> topUpAmounts = [100000, 200000, 500000, 1000000];
   int selectedAmount = 100000;
-  String paymentMethod = 'Bank Transfer'; 
+  String paymentMethod = 'Bank Transfer';
   TextEditingController customAmountController = TextEditingController();
 
   @override
@@ -109,7 +109,8 @@ class _TopUpSaldoPageState extends State<TopUpSaldoPage> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
-                  padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 50, vertical: 12),
                 ),
                 child: const Text(
                   'Top Up Sekarang',
@@ -129,7 +130,8 @@ class _TopUpSaldoPageState extends State<TopUpSaldoPage> {
 
   Widget _buildPaymentMethodOption(String method) {
     return ListTile(
-      title: Text(method, style: const TextStyle(fontSize: 16, color: Color(0xFF1B3358))),
+      title: Text(method,
+          style: const TextStyle(fontSize: 16, color: Color(0xFF1B3358))),
       leading: Radio<String>(
         value: method,
         groupValue: paymentMethod,
@@ -150,14 +152,5 @@ class _TopUpSaldoPageState extends State<TopUpSaldoPage> {
             'Top up Rp. $selectedAmount menggunakan $paymentMethod sedang diproses...'),
       ),
     );
-  }
-}
-  State<TopUpSaldoPage> createState() => _TopUpSaldoPageState();
-}
-
-class _TopUpSaldoPageState extends State<TopUpSaldoPage> {
-  @override
-  Widget build(BuildContext context) {
-    return const Placeholder();
   }
 }

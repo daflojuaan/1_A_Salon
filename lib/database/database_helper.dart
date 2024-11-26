@@ -18,7 +18,7 @@ class DatabaseHelper {
 
   Future<Database> _initDB() async {
     String path = join(await getDatabasesPath(), 'user.db');
-    print("Database path: $path");
+    print("Database path: $path"); // Menampilkan path di console
     return await openDatabase(
       path,
       version: 1,
@@ -49,7 +49,7 @@ class DatabaseHelper {
       where: 'username = ?',
       whereArgs: [username],
     );
-    return maps.isNotEmpty;
+    return maps.isNotEmpty; // Mengembalikan true jika ada entri
   }
 
   Future<User?> getUser(String username, String password) async {
@@ -66,6 +66,7 @@ class DatabaseHelper {
     return null;
   }
 
+  // Menambahkan metode untuk menghapus pengguna
   Future<void> deleteUser(String username) async {
     final db = await database;
     await db.delete(
@@ -89,6 +90,7 @@ class DatabaseHelper {
     return null;
   }
 
+  // Perbaikan metode updateUserPassword
   Future<void> updateUserPassword(User user) async {
     final db = await database;
     await db.update(
@@ -97,5 +99,21 @@ class DatabaseHelper {
       where: 'id = ?',
       whereArgs: [user.id],
     );
+  }
+
+  Future<void> updateUser(User user) async {
+    final db = await database;
+    int result = await db.update(
+      'users',
+      {
+        'username': user.username,
+        'email': user.email,
+        'phone': user.phone,
+        'gender': user.gender,
+      },
+      where: 'id = ?',
+      whereArgs: [user.id],
+    );
+    print("Update result: $result"); // Debug statement to check if update is successful
   }
 }
