@@ -53,7 +53,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: const Color(0xFFFFC107),
+          backgroundColor: const Color(0xFFEAD8B0),
           title: const Text("KONFIRMASI"),
           content: const Text("Yakin Ingin Mengubah Data?"),
           actions: [
@@ -61,20 +61,22 @@ class _EditProfilePageState extends State<EditProfilePage> {
               onPressed: () {
                 Navigator.of(context).pop(); // Tutup dialog
               },
-              child: const Text(
-                "BATAL",
-                style: TextStyle(color: Color(0xFF6A9AB0)),
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(0xFF001f3f), // Warna teks
+                backgroundColor:const Color(0xFF6A9AB0), // Warna tombol
               ),
+            child: const Text('Batal'),
             ),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(); // Tutup dialog
                 _saveChanges(); // Panggil fungsi simpan perubahan
               },
-              child: const Text(
-                "IYA",
-                style: TextStyle(color: Colors.red),
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(0xFF001f3f), // Warna teks
+                backgroundColor:const Color(0xFF6A9AB0), // Warna tombol
               ),
+            child: const Text('YA'),
             ),
           ],
         );

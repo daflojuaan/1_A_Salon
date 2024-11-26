@@ -38,7 +38,7 @@ class _GantiPasswordPageState extends State<GantiPasswordPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFFFFC107),
+        backgroundColor: const Color(0xFFEAD8B0),
         title: const Text('Konfirmasi Penggantian Password'),
         content: const Text('Apakah Anda yakin ingin mengganti password?'),
         actions: <Widget>[
@@ -46,10 +46,11 @@ class _GantiPasswordPageState extends State<GantiPasswordPage> {
             onPressed: () {
               Navigator.of(context).pop(); // Menutup dialog jika dibatalkan
             },
-            child: const Text(
-              'Batal',
-              style: TextStyle(color: Color(0xFF6A9AB0)),
-            ),
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(0xFF001f3f), // Warna teks
+                backgroundColor:const Color(0xFF6A9AB0), // Warna tombol
+              ),
+            child: const Text('Batal'),
           ),
           TextButton(
             onPressed: () async {
@@ -79,7 +80,11 @@ class _GantiPasswordPageState extends State<GantiPasswordPage> {
                 );
               }
             },
-            child: const Text('Ya', style: TextStyle(color: Colors.red)),
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(0xFF001f3f), // Warna teks
+                backgroundColor:const Color(0xFF6A9AB0), // Warna tombol
+              ),
+            child: const Text('YA'),
           ),
         ],
       ),

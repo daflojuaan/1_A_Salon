@@ -45,7 +45,7 @@ class PengaturanProfilePage extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFFFFC107),
+        backgroundColor: const Color(0xFFEAD8B0),
         title: const Text('Konfirmasi Penghapusan Akun'),
         content: const Text('Apakah Anda yakin ingin menghapus akun ini?'),
         actions: <Widget>[
@@ -53,6 +53,10 @@ class PengaturanProfilePage extends StatelessWidget {
             onPressed: () {
               Navigator.of(context).pop(); 
             },
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(0xFF001f3f), // Warna teks
+                backgroundColor:const Color(0xFF6A9AB0), // Warna tombol
+              ),
             child: const Text('Batal'),
           ),
           TextButton(
@@ -66,7 +70,11 @@ class PengaturanProfilePage extends StatelessWidget {
 
               Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
             },
-            child: const Text('Hapus', style: TextStyle(color: Colors.red)),
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(0xFF001f3f), // Warna teks
+                backgroundColor:const Color(0xFF6A9AB0), // Warna tombol
+              ),
+            child: const Text('Hapus'),
           ),
         ],
       ),
