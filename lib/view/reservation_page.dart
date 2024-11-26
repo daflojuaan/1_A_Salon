@@ -1,10 +1,17 @@
-
-
 import 'package:flutter/material.dart';
 import 'package:a_salon/database/database_helper_reservation.dart';
 
 class ReservationPage extends StatefulWidget {
-  const ReservationPage({Key? key}) : super(key: key);
+  final bool initiallyShowForm; // Parameter baru
+  final String? preselectedBarber; // Parameter untuk barber yang dipilih
+  final List<String>? availableServices; // Parameter untuk layanan yang tersedia
+
+  const ReservationPage({
+    Key? key,
+    this.initiallyShowForm = false,
+    this.preselectedBarber,
+    this.availableServices,
+  }) : super(key: key);
 
   @override
   State<ReservationPage> createState() => _ReservationPageState();
@@ -14,7 +21,7 @@ class _ReservationPageState extends State<ReservationPage> {
   final DatabaseHelperReservasi _dbHelper = DatabaseHelperReservasi.instance;
   int _selectedIndex = 2;
   bool isAktifSelected = true;
-  bool showForm = false;
+  late bool showForm;
   List<Map<String, dynamic>> activeReservations = [];
 
   // Form state variables
@@ -22,6 +29,16 @@ class _ReservationPageState extends State<ReservationPage> {
   String? selectedService;
   String? selectedBarber;
   String? selectedTime;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadReservations();
+    showForm = widget.initiallyShowForm;
+    if (widget.preselectedBarber != null) {
+      selectedBarber = widget.preselectedBarber;
+    }
+  }
 
   final List<String> jamTersedia = [
     '09:00',
@@ -41,12 +58,6 @@ class _ReservationPageState extends State<ReservationPage> {
   ];
 
   final List<String> barbers = ['John', 'Mike', 'David', 'Sarah'];
-
-  @override
-  void initState() {
-    super.initState();
-    _loadReservations();
-  }
 
   void _loadReservations() async {
     final data = await _dbHelper.getActiveReservations();
@@ -161,6 +172,9 @@ class _ReservationPageState extends State<ReservationPage> {
 
 //FORM INPUT RESERVASI
   Widget _buildForm() {
+    // Gunakan widget.availableServices jika tersedia, jika tidak gunakan daftar layanan default
+    final services = widget.availableServices ?? layanan;
+    
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -207,7 +221,7 @@ class _ReservationPageState extends State<ReservationPage> {
           ),
           const SizedBox(height: 24),
 
-          // Pilih Layanan
+          // Pilih Layanan (menggunakan layanan dari barber yang dipilih)
           const Text(
             'Pilih Layanan',
             style: TextStyle(fontSize: 16),
@@ -221,7 +235,7 @@ class _ReservationPageState extends State<ReservationPage> {
               ),
             ),
             hint: const Text('Pilih Layanan'),
-            items: layanan.map((String value) {
+            items: services.map((String value) {
               return DropdownMenuItem<String>(
                 value: value,
                 child: Text(value),
@@ -235,7 +249,7 @@ class _ReservationPageState extends State<ReservationPage> {
           ),
           const SizedBox(height: 24),
 
-          // Pilih Barber
+          // Pilih Barber (disabled jika sudah dipilih dari halaman barber)
           const Text(
             'Pilih Barber',
             style: TextStyle(fontSize: 16),
@@ -249,17 +263,26 @@ class _ReservationPageState extends State<ReservationPage> {
               ),
             ),
             hint: const Text('Pilih Barber'),
-            items: barbers.map((String value) {
-              return DropdownMenuItem<String>(
-                value: value,
-                child: Text(value),
-              );
-            }).toList(),
-            onChanged: (newValue) {
-              setState(() {
-                selectedBarber = newValue;
-              });
-            },
+            items: widget.preselectedBarber != null 
+                ? [
+                    DropdownMenuItem<String>(
+                      value: widget.preselectedBarber,
+                      child: Text(widget.preselectedBarber!),
+                    )
+                  ]
+                : barbers.map((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+            onChanged: widget.preselectedBarber != null 
+                ? null // Disable jika barber sudah dipilih
+                : (newValue) {
+                    setState(() {
+                      selectedBarber = newValue;
+                    });
+                  },
           ),
           const SizedBox(height: 24),
 

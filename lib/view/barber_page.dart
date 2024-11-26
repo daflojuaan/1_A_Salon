@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:a_salon/view/reservation_page.dart';
 
 class BarberProfilePage extends StatelessWidget {
   const BarberProfilePage({super.key});
@@ -319,13 +320,15 @@ class ServicesBottomSheet extends StatelessWidget {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () {
-                // Add booking logic here
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Booking with $name will be available soon!'),
-                    behavior: SnackBarBehavior.floating,
-                    backgroundColor: const Color.fromARGB(255, 0, 31, 63),
+                Navigator.pop(context); // Tutup bottom sheet
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ReservationPage(
+                      initiallyShowForm: true, // Parameter baru untuk langsung menampilkan form
+                      preselectedBarber: name,
+                      availableServices: specialties,
+                    ),
                   ),
                 );
               },
