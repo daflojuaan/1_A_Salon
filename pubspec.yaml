@@ -4,7 +4,11 @@ publish_to: 'none'
 version: 0.1.0
 
 environment:
+<<<<<<< Updated upstream
   sdk: ^3.5.1
+=======
+  sdk: ^3.5.2
+>>>>>>> Stashed changes
 
 dependencies:
   flutter:
