@@ -96,7 +96,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: const Color(0xFFFFC107),
+          backgroundColor: const Color(0xFFEAD8B0),
           title: const Text("KONFIRMASI"),
           content: const Text("Apakah ingin keluar dari akun?"),
           actions: [
@@ -104,20 +104,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onPressed: () {
                 Navigator.of(context).pop(); 
               },
-              child: const Text(
-                "BATAL",
-                style: TextStyle(color: Color(0xFF6A9AB0)),
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(0xFF001f3f), // Warna teks
+                backgroundColor:const Color(0xFF6A9AB0), // Warna tombol
               ),
+            child: const Text('Tidak'),
             ),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(); 
                 _logout(); 
               },
-              child: const Text(
-                "IYA",
-                style: TextStyle(color: Colors.red),
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(0xFF001f3f), // Warna teks
+                backgroundColor:const Color(0xFF6A9AB0), // Warna tombol
               ),
+            child: const Text('Ya'),
             ),
           ],
         );

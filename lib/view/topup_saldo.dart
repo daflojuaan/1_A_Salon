@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:a_salon/view/caraPembayaranPage.dart';
 
 class TopUpSaldoPage extends StatefulWidget {
   const TopUpSaldoPage({super.key});
@@ -12,6 +13,13 @@ class _TopUpSaldoPageState extends State<TopUpSaldoPage> {
   int selectedAmount = 100000;
   String paymentMethod = 'Bank Transfer';
   TextEditingController customAmountController = TextEditingController();
+  String? selectedBank;
+
+  // Daftar bank yang tersedia
+  List<String> banks = ['BCA', 'BRI', 'Mandiri', 'BNI'];
+
+  // Daftar E-wallet yang tersedia
+  List<String> ewallets = ['DANA', 'GOPAY', 'ShopeePay', 'OVO'];
 
   @override
   Widget build(BuildContext context) {
@@ -98,11 +106,45 @@ class _TopUpSaldoPageState extends State<TopUpSaldoPage> {
                 _buildPaymentMethodOption('E-wallet'),
               ],
             ),
+            // Menampilkan pilihan bank jika Bank Transfer dipilih
+            if (paymentMethod == 'Bank Transfer')
+              const SizedBox(height: 20),
+            if (paymentMethod == 'Bank Transfer')
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Pilih Bank',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1B3358),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  DropdownButton<String>(
+                    isExpanded: true,
+                    hint: const Text('Pilih Bank'),
+                    value: selectedBank,
+                    onChanged: (String? newBank) {
+                      setState(() {
+                        selectedBank = newBank;
+                      });
+                    },
+                    items: banks.map<DropdownMenuItem<String>>((String bank) {
+                      return DropdownMenuItem<String>(
+                        value: bank,
+                        child: Text(bank),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
             const SizedBox(height: 30),
             Center(
               child: ElevatedButton(
                 onPressed: () {
-                  _topUpSaldo();
+                  _topUpSaldo(context);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF2B5585),
@@ -138,6 +180,7 @@ class _TopUpSaldoPageState extends State<TopUpSaldoPage> {
         onChanged: (value) {
           setState(() {
             paymentMethod = value!;
+            selectedBank = null; // Reset bank selection when changing method
           });
         },
         activeColor: const Color(0xFFFFC107),
@@ -145,12 +188,22 @@ class _TopUpSaldoPageState extends State<TopUpSaldoPage> {
     );
   }
 
-  void _topUpSaldo() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-            'Top up Rp. $selectedAmount menggunakan $paymentMethod sedang diproses...'),
+  void _topUpSaldo(BuildContext context) {
+    // Navigate to CaraPembayaranPage with payment method details
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CaraPembayaranPage(
+          amount: selectedAmount,
+          paymentMethod: paymentMethod,
+          bank: paymentMethod == 'Bank Transfer' ? selectedBank : null,
+          ewallet: paymentMethod == 'E-wallet' ? _getEwallet() : null,
+        ),
       ),
     );
+  }
+
+  String? _getEwallet() {
+    return paymentMethod == 'E-wallet' ? ewallets.first : null;
   }
 }

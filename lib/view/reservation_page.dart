@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:a_salon/database/database_helper_reservation.dart';
+import 'package:list/database/database_helper_reservation.dart';
 
 class ReservasiView extends StatefulWidget {
   const ReservasiView({Key? key}) : super(key: key);
@@ -45,10 +45,10 @@ class _ReservasiPageState extends State<ReservasiView> {
     'Kids Cut',
   ];
   final List<String> layananHazel = [
-   'Haircut',
-    'Beard Trim',
-    'Hair Coloring',
-    'HairStyling',
+    'Haircut',
+    'Shaving',
+    'Hairstyling',
+    'Kids Cut',
   ];
   final List<String> layananDaflo = [
     'Haircut',
@@ -396,7 +396,7 @@ class _ReservasiPageState extends State<ReservasiView> {
             Padding(
               padding: const EdgeInsets.only(right: 16.0),
               child: Image.asset(
-                'lib/asset/layanan.jpg',
+                'images/layanan.jpg',
                 width: 120,
                 height: 120,
                 fit: BoxFit.cover,
@@ -593,7 +593,7 @@ class _ReservasiPageState extends State<ReservasiView> {
               ? (activeReservations.isEmpty
                   ? Center(
                       child: Image.asset(
-                        'lib/asset/reservasi.png',
+                        'images/reservasi.png',
                         height: 300,
                       ),
                     )
@@ -601,7 +601,7 @@ class _ReservasiPageState extends State<ReservasiView> {
               : (canceledReservations.isEmpty // Tambahkan kondisi untuk RIWAYAT
                   ? Center(
                       child: Image.asset(
-                        'lib/asset/reservasi.png',
+                        'images/reservasi.png',
                         height: 300,
                       ),
                     )
