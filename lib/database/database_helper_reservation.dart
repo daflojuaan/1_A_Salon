@@ -23,13 +23,11 @@ class DatabaseHelperReservasi {
   // Database reference
   static Database? _database;
 
-
   Future<Database> get database async {
     if (_database != null) return _database!;
     _database = await _initDatabase();
     return _database!;
   }
-
 
   _initDatabase() async {
     String path = join(await getDatabasesPath(), _databaseName);
@@ -38,17 +36,17 @@ class DatabaseHelperReservasi {
   }
 
   // Create table
-  Future _onCreate(Database db, int version) async {
-    await db.execute(''' 
-      CREATE TABLE $table (
-        $columnId INTEGER PRIMARY KEY AUTOINCREMENT,
-        $columnDate TEXT NOT NULL,
-        $columnTime TEXT NOT NULL,
-        $columnBarber TEXT NOT NULL,
-        $columnService TEXT NOT NULL,
-        $columnStatus TEXT NOT NULL
-      )
-    ''');
+  Future<void> _onCreate(Database db, int version) async {
+    await db.execute('''
+    CREATE TABLE $table (
+      $columnId INTEGER PRIMARY KEY AUTOINCREMENT,
+      $columnDate TEXT NOT NULL,
+      $columnTime TEXT NOT NULL,
+      $columnBarber TEXT NOT NULL,
+      $columnService TEXT NOT NULL,
+      $columnStatus TEXT NOT NULL
+    )
+  ''');
   }
 
   // Insert RESERVASI
@@ -100,6 +98,28 @@ class DatabaseHelperReservasi {
       whereArgs: [id],
     );
   }
+
+// update reservasi di riwayat menjadi cancel
+Future<int> cancelReservation(int id) async {
+  Database db = await database;
+  return await db.update(
+    table,
+    {columnStatus: 'Canceled'}, 
+    where: '$columnId = ?',
+    whereArgs: [id],
+  );
+}
+
+// all cancel
+Future<List<Map<String, dynamic>>> getCanceledReservations() async {
+  Database db = await database;
+  return await db.query(
+    table,
+    where: '$columnStatus = ?',
+    whereArgs: ['Canceled'],
+    orderBy: '$columnDate DESC',
+  );
+}
 
   // Close database connection
   Future close() async {
