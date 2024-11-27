@@ -396,7 +396,7 @@ class _ReservasiPageState extends State<ReservasiView> {
             Padding(
               padding: const EdgeInsets.only(right: 16.0),
               child: Image.asset(
-                'images/layanan.jpg',
+                'lib/asset/layanan.jng',
                 width: 120,
                 height: 120,
                 fit: BoxFit.cover,
@@ -593,15 +593,15 @@ class _ReservasiPageState extends State<ReservasiView> {
               ? (activeReservations.isEmpty
                   ? Center(
                       child: Image.asset(
-                        'images/reservasi.png',
+                        'lib/asset/reservasi.png',
                         height: 300,
                       ),
                     )
                   : _buildActiveReservations())
-              : (canceledReservations.isEmpty // Tambahkan kondisi untuk RIWAYAT
+              : (canceledReservations.isEmpty 
                   ? Center(
                       child: Image.asset(
-                        'images/reservasi.png',
+                        'lib/asset/reservasi.png',
                         height: 300,
                       ),
                     )
