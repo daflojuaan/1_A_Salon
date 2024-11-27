@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:list/database/database_helper_reservation.dart';
+import 'package:a_salon/database/database_helper_reservation.dart';
 
 class ReservasiView extends StatefulWidget {
   const ReservasiView({Key? key}) : super(key: key);
@@ -134,17 +134,17 @@ class _ReservasiPageState extends State<ReservasiView> {
           return AlertDialog(
             backgroundColor: const Color(0xFFEAD8B0),
             title: const Center(
-              child: Text('Konfirmasi'), // Text berada di tengah
+              child: Text('Konfirmasi'), 
             ),
             content: const Text(
               'Yakin Ingin Membuat Reservasi?',
-              textAlign: TextAlign.center, // Teks hanya dipusatkan
+              textAlign: TextAlign.center, 
             ),
             actions: [
               Center(
                 child: Row(
                   mainAxisAlignment:
-                      MainAxisAlignment.center, // Pusatkan tombol
+                      MainAxisAlignment.center, 
                   children: [
                     TextButton(
                       onPressed: () async {
@@ -190,7 +190,7 @@ class _ReservasiPageState extends State<ReservasiView> {
                       ),
                       child: const Text('Ya'),
                     ),
-                    const SizedBox(width: 8), // Jarak antar tombol
+                    const SizedBox(width: 8), 
                     TextButton(
                       onPressed: () {
                         Navigator.of(context).pop();
@@ -396,7 +396,7 @@ class _ReservasiPageState extends State<ReservasiView> {
             Padding(
               padding: const EdgeInsets.only(right: 16.0),
               child: Image.asset(
-                'lib/asset/layanan.jng',
+                'lib/asset/layanan.jpg',
                 width: 120,
                 height: 120,
                 fit: BoxFit.cover,
