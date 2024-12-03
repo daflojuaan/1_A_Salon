@@ -1,26 +1,25 @@
-
-
 import 'package:flutter/material.dart';
 import 'package:a_salon/database/database_helper_reservation.dart';
 
-class ReservationPage extends StatefulWidget {
-  const ReservationPage({Key? key}) : super(key: key);
+class ReservasiView extends StatefulWidget {
+  const ReservasiView({Key? key}) : super(key: key);
 
   @override
-  State<ReservationPage> createState() => _ReservationPageState();
+  State<ReservasiView> createState() => _ReservasiPageState();
 }
 
-class _ReservationPageState extends State<ReservationPage> {
+class _ReservasiPageState extends State<ReservasiView> {
   final DatabaseHelperReservasi _dbHelper = DatabaseHelperReservasi.instance;
   int _selectedIndex = 2;
   bool isAktifSelected = true;
   bool showForm = false;
   List<Map<String, dynamic>> activeReservations = [];
+  List<Map<String, dynamic>> canceledReservations = [];
 
   // Form state variables
   DateTime? selectedDate;
-  String? selectedService;
   String? selectedBarber;
+  String? selectedService;
   String? selectedTime;
 
   final List<String> jamTersedia = [
@@ -33,14 +32,45 @@ class _ReservationPageState extends State<ReservationPage> {
     '16:00'
   ];
 
-  final List<String> layanan = [
-    'Potong Rambut',
-    'Creambath',
+  final List<String> layananDewa = [
+    'Haircut',
+    'Beard Trim',
     'Hair Coloring',
-    'Styling'
+    'HairStyling',
+  ];
+  final List<String> layananArdha = [
+    'Premium Cut',
+    'Shaving',
+    'Hairstyling',
+    'Kids Cut',
+  ];
+  final List<String> layananHazel = [
+    'Haircut',
+    'Shaving',
+    'Hairstyling',
+    'Kids Cut',
+  ];
+  final List<String> layananDaflo = [
+    'Haircut',
+    'Shaving',
+    'Hairstyling',
+    'Kids Cut',
   ];
 
-  final List<String> barbers = ['John', 'Mike', 'David', 'Sarah'];
+  List<String> _getAvailableServices() {
+    if (selectedBarber == 'Dewa') {
+      return layananDewa;
+    } else if (selectedBarber == 'Ardha') {
+      return layananArdha;
+    } else if (selectedBarber == 'Hazel') {
+      return layananHazel;
+    } else if (selectedBarber == 'Daflo') {
+      return layananDaflo;
+    }
+    return [];
+  }
+
+  final List<String> barbers = ['Dewa', 'Ardha', 'Hazel', 'Daflo'];
 
   @override
   void initState() {
@@ -49,9 +79,14 @@ class _ReservationPageState extends State<ReservationPage> {
   }
 
   void _loadReservations() async {
-    final data = await _dbHelper.getActiveReservations();
+    final activeReservations =
+        await DatabaseHelperReservasi.instance.getActiveReservations();
+    final canceledReservations =
+        await DatabaseHelperReservasi.instance.getCanceledReservations();
+
     setState(() {
-      activeReservations = data;
+      this.activeReservations = activeReservations;
+      this.canceledReservations = canceledReservations;
     });
   }
 
@@ -97,53 +132,78 @@ class _ReservationPageState extends State<ReservationPage> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: const Text('Konfirmasi Reservasi'),
-            content: const Text('Apakah Anda yakin ingin memesan layanan ini?'),
+            backgroundColor: const Color(0xFFEAD8B0),
+            title: const Center(
+              child: Text('Konfirmasi'), 
+            ),
+            content: const Text(
+              'Yakin Ingin Membuat Reservasi?',
+              textAlign: TextAlign.center, 
+            ),
             actions: [
-              TextButton(
-                onPressed: () async {
-                  // Create a new reservation entry
-                  final reservation = {
-                    'date':
-                        "${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}",
-                    'time': selectedTime!,
-                    'barber': selectedBarber!,
-                    'service': selectedService!,
-                    'status': 'Booked',
-                  };
+              Center(
+                child: Row(
+                  mainAxisAlignment:
+                      MainAxisAlignment.center, 
+                  children: [
+                    TextButton(
+                      onPressed: () async {
+                        // Create a new reservation entry
+                        final reservation = {
+                          'date':
+                              "${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}",
+                          'time': selectedTime!,
+                          'barber': selectedBarber!,
+                          'service': selectedService!,
+                          'status': 'Booked',
+                        };
 
-                  // Insert the reservation into the database
-                  await _dbHelper.insertReservation(reservation);
+                        // Insert the reservation into the database
+                        await _dbHelper.insertReservation(reservation);
 
-                  // Reset form and hide it
-                  setState(() {
-                    selectedDate = null;
-                    selectedService = null;
-                    selectedBarber = null;
-                    selectedTime = null;
-                    showForm = false;
-                  });
+                        // Reset form and hide it
+                        setState(() {
+                          selectedDate = null;
+                          selectedService = null;
+                          selectedBarber = null;
+                          selectedTime = null;
+                          showForm = false;
+                        });
 
-                  // Reload reservations
-                  _loadReservations();
+                        // Reload reservations
+                        _loadReservations();
 
-                  // Show success message
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Reservasi berhasil dibuat'),
+                        // Show success message
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Reservasi berhasil dibuat'),
+                          ),
+                        );
+
+                        // Close the dialog
+                        Navigator.of(context).pop();
+                      },
+                      style: TextButton.styleFrom(
+                        foregroundColor: const Color(0xFF001f3f), // Warna teks
+                        backgroundColor:
+                            const Color(0xFF6A9AB0), // Warna tombol
+                      ),
+                      child: const Text('Ya'),
                     ),
-                  );
-
-                  // Close the dialog
-                  Navigator.of(context).pop();
-                },
-                child: const Text('Ya'),
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text('Tidak'),
+                    const SizedBox(width: 8), 
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      style: TextButton.styleFrom(
+                        foregroundColor: const Color(0xFF001f3f), // Warna teks
+                        backgroundColor:
+                            const Color(0xFF6A9AB0), // Warna tombol
+                      ),
+                      child: const Text('Tidak'),
+                    ),
+                  ],
+                ),
               ),
             ],
           );
@@ -157,7 +217,6 @@ class _ReservationPageState extends State<ReservationPage> {
       );
     }
   }
-
 
 //FORM INPUT RESERVASI
   Widget _buildForm() {
@@ -207,34 +266,6 @@ class _ReservationPageState extends State<ReservationPage> {
           ),
           const SizedBox(height: 24),
 
-          // Pilih Layanan
-          const Text(
-            'Pilih Layanan',
-            style: TextStyle(fontSize: 16),
-          ),
-          DropdownButtonFormField<String>(
-            value: selectedService,
-            decoration: const InputDecoration(
-              contentPadding: EdgeInsets.zero,
-              enabledBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: Colors.grey),
-              ),
-            ),
-            hint: const Text('Pilih Layanan'),
-            items: layanan.map((String value) {
-              return DropdownMenuItem<String>(
-                value: value,
-                child: Text(value),
-              );
-            }).toList(),
-            onChanged: (newValue) {
-              setState(() {
-                selectedService = newValue;
-              });
-            },
-          ),
-          const SizedBox(height: 24),
-
           // Pilih Barber
           const Text(
             'Pilih Barber',
@@ -258,10 +289,42 @@ class _ReservationPageState extends State<ReservationPage> {
             onChanged: (newValue) {
               setState(() {
                 selectedBarber = newValue;
+                selectedService =
+                    null; // Reset selected service when barber changes
               });
             },
           ),
           const SizedBox(height: 24),
+
+          // Pilih Layanan (only show after selecting Barber)
+          if (selectedBarber != null) ...[
+            const Text(
+              'Pilih Layanan',
+              style: TextStyle(fontSize: 16),
+            ),
+            DropdownButtonFormField<String>(
+              value: selectedService,
+              decoration: const InputDecoration(
+                contentPadding: EdgeInsets.zero,
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.grey),
+                ),
+              ),
+              hint: const Text('Pilih Layanan'),
+              items: _getAvailableServices().map((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+              onChanged: (newValue) {
+                setState(() {
+                  selectedService = newValue;
+                });
+              },
+            ),
+            const SizedBox(height: 24),
+          ],
 
           // Pilih Jam
           const Text(
@@ -289,7 +352,6 @@ class _ReservationPageState extends State<ReservationPage> {
               });
             },
           ),
-
           const SizedBox(height: 48),
 
           // Pesan Sekarang Button
@@ -321,11 +383,11 @@ class _ReservationPageState extends State<ReservationPage> {
     );
   }
 
-
   //Detail Reservasi
   Widget _buildReservationDetails(Map<String, dynamic> reservation) {
     return Card(
       elevation: 2,
+      color: const Color(0xFF6A9AB0),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Row(
@@ -334,7 +396,7 @@ class _ReservationPageState extends State<ReservationPage> {
             Padding(
               padding: const EdgeInsets.only(right: 16.0),
               child: Image.asset(
-                'images/layanan.jpg',
+                'lib/asset/layanan.jpg',
                 width: 120,
                 height: 120,
                 fit: BoxFit.cover,
@@ -364,13 +426,14 @@ class _ReservationPageState extends State<ReservationPage> {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         'Barber: ${reservation['barber']}',
                         style: const TextStyle(fontSize: 14),
                       ),
+                      const SizedBox(height: 4),
                       Text(
                         'Layanan: ${reservation['service']}',
                         style: const TextStyle(fontSize: 14),
@@ -388,7 +451,7 @@ class _ReservationPageState extends State<ReservationPage> {
                     children: [
                       TextButton(
                         onPressed: () {
-                          // fungsionalitas
+                          // fungsionalitas edit
                         },
                         style: TextButton.styleFrom(
                           backgroundColor: const Color(0xFF001f3f),
@@ -398,10 +461,13 @@ class _ReservationPageState extends State<ReservationPage> {
                           style: TextStyle(color: Colors.white),
                         ),
                       ),
-                      SizedBox(width: 10), 
+                      SizedBox(width: 10),
                       TextButton(
-                        onPressed: () {
-                          // fungsionalitas
+                        onPressed: () async {
+                          await DatabaseHelperReservasi.instance
+                              .cancelReservation(reservation['id']);
+
+                          _loadReservations();
                         },
                         style: TextButton.styleFrom(
                           backgroundColor: const Color(0xFF001f3f),
@@ -412,7 +478,7 @@ class _ReservationPageState extends State<ReservationPage> {
                         ),
                       ),
                     ],
-                  )
+                  ),
                 ],
               ),
             ),
@@ -432,6 +498,15 @@ class _ReservationPageState extends State<ReservationPage> {
     );
   }
 
+  Widget _buildHistoryReservations() {
+    return ListView.builder(
+      itemCount: canceledReservations.length,
+      itemBuilder: (context, index) {
+        final reservation = canceledReservations[index];
+        return _buildReservationDetails(reservation);
+      },
+    );
+  }
 
 // app bar RESERVASI
   @override
@@ -512,27 +587,26 @@ class _ReservationPageState extends State<ReservationPage> {
               )
             : null,
       ),
-
-
-      //set gambar Menu AKTIF dan RIWAYAT
       body: showForm
           ? _buildForm()
           : isAktifSelected
               ? (activeReservations.isEmpty
                   ? Center(
                       child: Image.asset(
-                        'asset/reservasi.png',
+                        'lib/asset/reservasi.png',
                         height: 300,
                       ),
                     )
                   : _buildActiveReservations())
-              : Center(
-                  child: Image.asset(
-                    'asset/reservasi.png',
-                    height: 300,
-                  ),
-                ),
-      floatingActionButton: !showForm
+              : (canceledReservations.isEmpty 
+                  ? Center(
+                      child: Image.asset(
+                        'lib/asset/reservasi.png',
+                        height: 300,
+                      ),
+                    )
+                  : _buildHistoryReservations()),
+      floatingActionButton: !showForm && isAktifSelected
           ? FloatingActionButton(
               onPressed: _toggleForm,
               child: const Icon(
