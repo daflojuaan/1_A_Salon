@@ -11,6 +11,8 @@ class CameraView extends StatefulWidget {
 class _CameraViewState extends State<CameraView> {
   Future<void>? _initializeCameraFuture;
   late CameraController _cameraController;
+  List<CameraDescription> _cameras = [];
+  int _selectedCameraIndex = 0;
 
   @override
   void initState() {
@@ -19,11 +21,16 @@ class _CameraViewState extends State<CameraView> {
   }
 
   Future<void> initializeCamera() async {
-    final cameras = await availableCameras();
-    final firstCamera = cameras.first;
+    // Mendapatkan daftar semua kamera yang tersedia pada perangkat
+    _cameras = await availableCameras();
 
+    // Mengatur kamera pertama sebagai kamera awal
+    _setCameraController(_cameras[_selectedCameraIndex]);
+  }
+
+  Future<void> _setCameraController(CameraDescription cameraDescription) async {
     _cameraController = CameraController(
-      firstCamera,
+      cameraDescription,
       ResolutionPreset.medium,
     );
 
@@ -39,6 +46,13 @@ class _CameraViewState extends State<CameraView> {
     super.dispose();
   }
 
+  void _switchCamera() {
+    setState(() {
+      _selectedCameraIndex = (_selectedCameraIndex + 1) % _cameras.length;
+    });
+    _setCameraController(_cameras[_selectedCameraIndex]);
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_initializeCameraFuture == null) {
@@ -46,22 +60,40 @@ class _CameraViewState extends State<CameraView> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Take a picture')),
-      body: FutureBuilder<void>(
-        future: _initializeCameraFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            return CameraPreview(_cameraController);
-          } else {
-            return const Center(child: CircularProgressIndicator());
-          }
-        },
+      appBar: AppBar(
+        title: const Text('Ambil Foto'),
+      ),
+      body: Stack(
+        children: [
+          FutureBuilder<void>(
+            future: _initializeCameraFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.done) {
+                return CameraPreview(_cameraController);
+              } else {
+                return const Center(child: CircularProgressIndicator());
+              }
+            },
+          ),
+          // Menempatkan tombol switch kamera di bagian bawah tengah
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 20),
+              child: FloatingActionButton(
+                onPressed: _switchCamera,
+                child: const Icon(Icons.switch_camera),
+              ),
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           try {
             await _initializeCameraFuture;
 
+            // Mengambil gambar
             final image = await _cameraController.takePicture();
 
             Navigator.of(context).pop(image.path);
