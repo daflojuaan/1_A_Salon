@@ -91,77 +91,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void _confirmLogout() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: const Color(0xFFEAD8B0),
-          title: const Text("KONFIRMASI"),
-          content: const Text("Apakah ingin keluar dari akun?"),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); 
-              },
-              style: TextButton.styleFrom(
-                foregroundColor: const Color(0xFF001f3f), // Warna teks
-                backgroundColor:const Color(0xFF6A9AB0), // Warna tombol
-              ),
-            child: const Text('Tidak'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); 
-                _logout(); 
-              },
-              style: TextButton.styleFrom(
-                foregroundColor: const Color(0xFF001f3f), // Warna teks
-                backgroundColor:const Color(0xFF6A9AB0), // Warna tombol
-              ),
-            child: const Text('Ya'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _logout() {
-    Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
-  }
-
   void _updateUser(User updatedUser) {
     setState(() {
       _user = updatedUser; 
     });
   }
 
-  @override
+ @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Profile'),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => PengaturanProfilePage(user: _user),
-                ),
-              );
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: _confirmLogout,
-          ),
-        ],
-      ),
-      backgroundColor: Colors.white, 
+      backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -169,35 +108,50 @@ class _ProfileScreenState extends State<ProfileScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Center(
-                child: Stack(
+                child: Column(
                   children: [
-                    CircleAvatar(
-                      radius: 60,
-                      backgroundImage: _profileImage != null
-                          ? FileImage(_profileImage!)
-                          : null,
-                      child: _profileImage == null
-                          ? const Icon(Icons.person, size: 50)
-                          : null,
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: InkWell(
-                        onTap: _showImageSourceActionSheet,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: const Color(0xFF6A9AB0),
-                          ),
-                          padding: const EdgeInsets.all(8),
-                          child: const Icon(Icons.camera_alt, color: Colors.white),
-                        ),
+                    const Text(
+                      'Profile',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
                       ),
+                    ),
+                    const SizedBox(height: 10), 
+                    Stack(
+                      children: [
+                        CircleAvatar(
+                          radius: 60,
+                          backgroundImage: _profileImage != null
+                              ? FileImage(_profileImage!)
+                              : null,
+                          child: _profileImage == null
+                              ? const Icon(Icons.person, size: 50, color: Colors.white)
+                              : null,
+                            backgroundColor: const Color(0xFF001F3F),
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: InkWell(
+                            onTap: _showImageSourceActionSheet,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: const Color(0xFF6A9AB0),
+                              ),
+                              padding: const EdgeInsets.all(8),
+                              child: const Icon(Icons.camera_alt, color: Colors.white),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
+
               const SizedBox(height: 10),
               Center(
                 child: Text(
@@ -215,47 +169,68 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _buildProfileInfoCard('Phone', _user.phone),
               _buildProfileInfoCard('Gender', _user.gender),
               const SizedBox(height: 20),
-              // Edit Profile Button
-              SizedBox(
-                width: 150,
-                child: ElevatedButton(
-                  onPressed: () async {
-                    final updatedUser = await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => EditProfilePage(user: _user),
-                      ),
-                    );
-
-                    if (updatedUser != null) {
-                      _updateUser(updatedUser);
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF6A9AB0),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
-                    minimumSize: const Size(0, 20),
-                  ),
-                  child: const Text('Edit Profile', style: TextStyle(fontSize: 16)),
-                ),
-              ),
-              const SizedBox(height: 20),
-              // Empty Create PIN Button
+              // Settings Button
               SizedBox(
                 width: 150,
                 child: ElevatedButton(
                   onPressed: () {
-                    // Logic for creating PIN can be added here later
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => PengaturanProfilePage(user: _user),
+                      ),
+                    );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF6A9AB0),
-                    foregroundColor: Colors.white,
+                    foregroundColor: Colors.white, 
                     padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
                     minimumSize: const Size(0, 20),
                   ),
-                  child: const Text('Buat PIN', style: TextStyle(fontSize: 16)),
+                  child: const Text('Settings', style: TextStyle(fontSize: 16)),
                 ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween, 
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        final updatedUser = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => EditProfilePage(user: _user),
+                          ),
+                        );
+
+                        if (updatedUser != null) {
+                          _updateUser(updatedUser);
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF6A9AB0),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 15),
+                      ),
+                      child: const Text('Edit Profile', style: TextStyle(fontSize: 16)),
+                    ),
+                  ),
+                  const SizedBox(width: 10), 
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        // Logika untuk membuat PIN 
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF6A9AB0),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 15),
+                      ),
+                      child: const Text('Buat PIN', style: TextStyle(fontSize: 16)),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

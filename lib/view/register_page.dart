@@ -1,9 +1,9 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:a_salon/database/database_helper.dart';
-import 'user.dart';
+import 'package:http/http.dart' as http;
 
 class RegisterPage extends StatefulWidget {
-  const RegisterPage({super.key});
+  const RegisterPage({Key? key}) : super(key: key);
 
   @override
   _RegisterPageState createState() => _RegisterPageState();
@@ -11,260 +11,241 @@ class RegisterPage extends StatefulWidget {
 
 class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _usernameController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
-  
-  String? _selectedGender;
   bool _isPasswordVisible = false;
+  String? _selectedGender;
+  bool _isLoading = false;
 
-  void _register() async {
+  // Improved error handling
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+
+  // Validate input fields
+  bool _validateInputs() {
     if (_usernameController.text.isEmpty ||
-        _passwordController.text.isEmpty ||
         _emailController.text.isEmpty ||
+        _passwordController.text.isEmpty ||
         _phoneController.text.isEmpty ||
         _selectedGender == null) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: const Text('Please fill in all fields'),
-        backgroundColor: Colors.red.shade400,
-        behavior: SnackBarBehavior.floating,
-      ));
-      return;
+      _showError("All fields are required!");
+      return false;
     }
+    return true;
+  }
 
-    bool usernameExists = await DatabaseHelper().isUsernameExists(_usernameController.text);
-    if (usernameExists) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: const Text('Username already exists'),
-        backgroundColor: Colors.red.shade400,
-        behavior: SnackBarBehavior.floating,
-      ));
-      return;
-    }
+  // Improved registration method
+  void _register() async {
+    if (!_validateInputs()) return;
 
-    User user = User(
-      username: _usernameController.text,
-      password: _passwordController.text,
-      email: _emailController.text,
-      phone: _phoneController.text,
-      gender: _selectedGender!,
-    );
+    setState(() {
+      _isLoading = true;
+    });
 
     try {
-      await DatabaseHelper().insertUser(user);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: const Text('Registration successful!'),
-        backgroundColor: Colors.green.shade400,
-        behavior: SnackBarBehavior.floating,
-      ));
-      Navigator.pop(context);
+      // Use full URL with proper protocol
+      final response = await http.post(
+        Uri.parse('http://192.168.237.62:8000/api/user'),// Replace with actual backend URL
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: json.encode({
+          'username': _usernameController.text,
+          'email': _emailController.text,
+          'password': _passwordController.text,
+          'phone': _phoneController.text,
+          'gender': _selectedGender,
+        }),
+      );
+
+      setState(() {
+        _isLoading = false;
+      });
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        // Successful registration
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Registration Successful'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Navigator.pop(context); // Or navigate to login page
+      } else {
+        // Handle specific error responses
+        final errorBody = json.decode(response.body);
+        _showError(errorBody['message'] ?? 'Registration failed');
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Error registering user: $e'),
-        backgroundColor: Colors.red.shade400,
-        behavior: SnackBarBehavior.floating,
-      ));
+      setState(() {
+        _isLoading = false;
+      });
+      _showError('Network error: $e');
     }
+  }
+
+  // Build TextField widget
+  Widget _buildTextField(
+      TextEditingController controller, String label, IconData icon,
+      {bool isPassword = false}) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: TextField(
+          controller: controller,
+          obscureText: isPassword && !_isPasswordVisible,
+          decoration: InputDecoration(
+            labelText: label,
+            labelStyle: TextStyle(color: Color.fromARGB(255, 0, 31, 63)),
+            prefixIcon: Icon(icon, color: Color.fromARGB(255, 0, 31, 63)),
+            suffixIcon: isPassword
+                ? IconButton(
+                    icon: Icon(
+                      _isPasswordVisible
+                          ? Icons.visibility
+                          : Icons.visibility_off,
+                      color: Color.fromARGB(255, 0, 31, 63),
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _isPasswordVisible = !_isPasswordVisible;
+                      });
+                    },
+                  )
+                : null,
+            border: InputBorder.none,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Build Gender Dropdown widget
+  Widget _buildGenderDropdown() {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: DropdownButtonFormField<String>(
+          value: _selectedGender,
+          decoration: InputDecoration(
+            labelText: 'Gender',
+            labelStyle: TextStyle(color: Color.fromARGB(255, 0, 31, 63)),
+            prefixIcon:
+                Icon(Icons.people, color: Color.fromARGB(255, 0, 31, 63)),
+            border: InputBorder.none,
+          ),
+          items: const [
+            DropdownMenuItem(value: 'Laki-laki', child: Text('Laki-Laki')),
+            DropdownMenuItem(value: 'Perempuan', child: Text('Perempuan')),
+          ],
+          onChanged: (value) {
+            setState(() {
+              _selectedGender = value;
+            });
+          },
+          hint: Text('Pilih Gender'),
+          isExpanded: true,
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF001f3f),
-      body: Container(
-        child: SafeArea(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: IconButton(
-                      icon: Icon(Icons.arrow_back, color: const Color.fromARGB(255, 0, 31, 63)),
-                      onPressed: () => Navigator.pop(context),
-                    ),
+      backgroundColor: Color(0xFF001f3f),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.all(24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: IconButton(
+                    icon: Icon(Icons.arrow_back,
+                        color: Color.fromARGB(255, 0, 31, 63)),
+                    onPressed: () => Navigator.pop(context),
                   ),
-                  
-                  const SizedBox(height: 10),
-                  Image.asset('lib/asset/logo putih.png', height: 100),
-                  const SizedBox(height: 20),
-                  Text(
+                ),
+                SizedBox(height: 10),
+                Image.asset('lib/asset/logo putih.png', height: 100),
+                SizedBox(height: 20),
+                Text(
+                  'REGISTER',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Color.fromARGB(255, 255, 255, 255),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 10),
+                _buildTextField(_usernameController, 'Username', Icons.person),
+                SizedBox(height: 16),
+                _buildTextField(_passwordController, 'Password', Icons.lock,
+                    isPassword: true),
+                SizedBox(height: 16),
+                _buildTextField(_emailController, 'Email', Icons.email),
+                SizedBox(height: 16),
+                _buildTextField(_phoneController, 'Phone', Icons.phone),
+                SizedBox(height: 16),
+                _buildGenderDropdown(),
+                SizedBox(height: 30),
+                ElevatedButton(
+                  onPressed: _register,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color.fromARGB(255, 255, 255, 255),
+                    foregroundColor: Color.fromARGB(255, 0, 31, 63),
+                    padding: EdgeInsets.symmetric(vertical: 15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    elevation: 5,
+                  ),
+                  child: Text(
                     'REGISTER',
                     style: TextStyle(
-                      fontSize: 28,
+                      fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: const Color.fromARGB(255, 255, 255, 255),
                     ),
-                    textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 10),
-                  Card(
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
+                ),
+                SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Already have an account? ',
+                      style:
+                          TextStyle(color: Color.fromARGB(255, 255, 255, 255)),
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      child: TextField(
-                        controller: _usernameController,
-                        decoration: InputDecoration(
-                          labelText: 'Username',
-                          labelStyle: TextStyle(color: const Color.fromARGB(255, 0, 31, 63)),
-                          prefixIcon: Icon(Icons.person, color: const Color.fromARGB(255, 0, 31, 63)),
-                          border: InputBorder.none,
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text(
+                        'Login here',
+                        style: TextStyle(
+                          color: Color.fromARGB(255, 234, 216, 177),
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  Card(
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      child: TextField(
-                        controller: _passwordController,
-                        obscureText: !_isPasswordVisible,
-                        decoration: InputDecoration(
-                          labelText: 'Password',
-                          labelStyle: TextStyle(color: const Color.fromARGB(255, 0, 31, 63)),
-                          prefixIcon: Icon(Icons.lock, color: const Color.fromARGB(255, 0, 31, 63)),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                              color: const Color.fromARGB(255, 0, 31, 63),
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                _isPasswordVisible = !_isPasswordVisible;
-                              });
-                            },
-                          ),
-                          border: InputBorder.none,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  Card(
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      child: TextField(
-                        controller: _emailController,
-                        decoration: InputDecoration(
-                          labelText: 'Email',
-                          labelStyle: TextStyle(color: const Color.fromARGB(255, 0, 31, 63)),
-                          prefixIcon: Icon(Icons.email, color: const Color.fromARGB(255, 0, 31, 63)),
-                          border: InputBorder.none,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  Card(
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      child: TextField(
-                        controller: _phoneController,
-                        decoration: InputDecoration(
-                          labelText: 'Phone',
-                          labelStyle: TextStyle(color: const Color.fromARGB(255, 0, 31, 63)),
-                          prefixIcon: Icon(Icons.phone, color: const Color.fromARGB(255, 0, 31, 63)),
-                          border: InputBorder.none,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  Card(
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      child: DropdownButtonFormField<String>(
-                        value: _selectedGender,
-                        decoration: InputDecoration(
-                          labelText: 'Gender',
-                          labelStyle: TextStyle(color: const Color.fromARGB(255, 0, 31, 63)),
-                          prefixIcon: Icon(Icons.people, color: const Color.fromARGB(255, 0, 31, 63)),
-                          border: InputBorder.none,
-                        ),
-                        items: const [
-                          DropdownMenuItem(value: 'Laki-laki', child: Text('Laki-Laki')),
-                          DropdownMenuItem(value: 'Perempuan', child: Text('Perempuan')),
-                        ],
-                        onChanged: (value) {
-                          setState(() {
-                            _selectedGender = value;
-                          });
-                        },
-                        hint: const Text('Pilih Gender'),
-                        isExpanded: true,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 30),
-
-                  ElevatedButton(
-                    onPressed: _register,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-                      foregroundColor: const Color.fromARGB(255, 0, 31, 63),
-                      padding: const EdgeInsets.symmetric(vertical: 15),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      elevation: 5,
-                    ),
-                    child: const Text(
-                      'REGISTER',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Already have an account? ',
-                        style: TextStyle(color: const Color.fromARGB(255, 255, 255, 255)),
-                      ),
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: Text(
-                          'Login here',
-                          style: TextStyle(
-                            color: const Color.fromARGB(255, 234, 216, 177),
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                  ],
+                ),
+              ],
             ),
           ),
         ),
