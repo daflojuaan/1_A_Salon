@@ -81,6 +81,46 @@ class PengaturanProfilePage extends StatelessWidget {
     );
   }
 
+  void _confirmLogout(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFFEAD8B0),
+          title: const Text("KONFIRMASI"),
+          content: const Text("Apakah ingin keluar dari akun?"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Tutup dialog
+              },
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(0xFF001f3f),
+                backgroundColor: const Color(0xFF6A9AB0),
+              ),
+              child: const Text('Tidak'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Tutup dialog
+                _logout(context);
+              },
+              style: TextButton.styleFrom(
+                foregroundColor: const Color(0xFF001f3f),
+                backgroundColor: const Color(0xFF6A9AB0),
+              ),
+              child: const Text('Ya'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _logout(BuildContext context) {
+    Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -129,6 +169,27 @@ class PengaturanProfilePage extends StatelessWidget {
                     SizedBox(width: 16),
                     Text(
                       'Delete Account',
+                      style: TextStyle(color: Colors.white, fontSize: 16),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            InkWell(
+              onTap: () => _confirmLogout(context),
+              child: Container(
+                padding: const EdgeInsets.all(16.0),
+                margin: const EdgeInsets.symmetric(vertical: 8.0),
+                decoration: BoxDecoration(
+                  color: Colors.orange[600],
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  children: const [
+                    Icon(Icons.logout, color: Colors.white),
+                    SizedBox(width: 16),
+                    Text(
+                      'Logout',
                       style: TextStyle(color: Colors.white, fontSize: 16),
                     ),
                   ],
