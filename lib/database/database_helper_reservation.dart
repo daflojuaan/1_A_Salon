@@ -1,7 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
-class DatabaseHelperReservasi {
+class DatabaseHelperReservasi{
   // Database name and version
   static const _databaseName = 'reservasi.db';
   static const _databaseVersion = 1;

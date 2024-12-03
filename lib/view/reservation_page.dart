@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:a_salon/database/database_helper_reservation.dart';
+import 'package:a_salon/view/edit_reservasi_page.dart';
+import 'package:a_salon/view/ulasan_page.dart';
+import 'package:a_salon/view/detail_reservasi_page.dart';
 
 class ReservasiView extends StatefulWidget {
   const ReservasiView({Key? key}) : super(key: key);
@@ -56,6 +59,7 @@ class _ReservasiPageState extends State<ReservasiView> {
     'Hairstyling',
     'Kids Cut',
   ];
+  
 
   List<String> _getAvailableServices() {
     if (selectedBarber == 'Dewa') {
@@ -134,17 +138,16 @@ class _ReservasiPageState extends State<ReservasiView> {
           return AlertDialog(
             backgroundColor: const Color(0xFFEAD8B0),
             title: const Center(
-              child: Text('Konfirmasi'), 
+              child: Text('Konfirmasi'),
             ),
             content: const Text(
               'Yakin Ingin Membuat Reservasi?',
-              textAlign: TextAlign.center, 
+              textAlign: TextAlign.center,
             ),
             actions: [
               Center(
                 child: Row(
-                  mainAxisAlignment:
-                      MainAxisAlignment.center, 
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     TextButton(
                       onPressed: () async {
@@ -190,7 +193,7 @@ class _ReservasiPageState extends State<ReservasiView> {
                       ),
                       child: const Text('Ya'),
                     ),
-                    const SizedBox(width: 8), 
+                    const SizedBox(width: 8),
                     TextButton(
                       onPressed: () {
                         Navigator.of(context).pop();
@@ -384,7 +387,18 @@ class _ReservasiPageState extends State<ReservasiView> {
   }
 
   //Detail Reservasi
-  Widget _buildReservationDetails(Map<String, dynamic> reservation) {
+Widget _buildReservationDetails(Map<String, dynamic> reservation,
+      {bool isHistory = false}) {
+    String imagePath;
+    if (reservation['barber'] == 'Ardha') {
+      imagePath = 'lib/asset/1.jpg';
+    } else if (reservation['barber'] == 'Dewa') {
+      imagePath = 'lib/asset/2.jpg';
+    } else if (reservation['barber'] == 'Hazel'){
+      imagePath = 'lib/asset/3.jpg'; 
+    }else{
+      imagePath = 'lib/asset/4.jpg';
+    }
     return Card(
       elevation: 2,
       color: const Color(0xFF6A9AB0),
@@ -394,12 +408,17 @@ class _ReservasiPageState extends State<ReservasiView> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.only(right: 16.0),
-              child: Image.asset(
-                'lib/asset/layanan.jpg',
-                width: 120,
-                height: 120,
-                fit: BoxFit.cover,
+              padding: const EdgeInsets.only(
+                  right: 16.0, top: 17.0), // Tambahkan padding top
+              child: ClipRRect(
+                borderRadius:
+                    BorderRadius.circular(12.0), // Tambahkan radius lengkungan
+                child: Image.asset(
+                  imagePath, // Use the selected image path
+                  width: 120,
+                  height: 120,
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
             Expanded(
@@ -448,36 +467,94 @@ class _ReservasiPageState extends State<ReservasiView> {
                   const SizedBox(height: 12),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      TextButton(
-                        onPressed: () {
-                          // fungsionalitas edit
-                        },
-                        style: TextButton.styleFrom(
-                          backgroundColor: const Color(0xFF001f3f),
-                        ),
-                        child: const Text(
-                          'Edit',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
-                      SizedBox(width: 10),
-                      TextButton(
-                        onPressed: () async {
-                          await DatabaseHelperReservasi.instance
-                              .cancelReservation(reservation['id']);
-
-                          _loadReservations();
-                        },
-                        style: TextButton.styleFrom(
-                          backgroundColor: const Color(0xFF001f3f),
-                        ),
-                        child: const Text(
-                          'Cancel',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    ],
+                    children: isHistory
+                        ? [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        UlasanPage(reservation: reservation),
+                                  ),
+                                );
+                              },
+                              style: TextButton.styleFrom(
+                                backgroundColor: const Color(0xFF001f3f),
+                              ),
+                              child: Text(
+                                'Ulasan',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            OutlinedButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        DetailReservasiPage(reservation: reservation),
+                                  ),
+                                );
+                              },
+                              style: OutlinedButton.styleFrom(
+                                side: const BorderSide(
+                                  color: Color(0xFF001f3f),
+                                  width: 2.0,
+                                ),
+                                backgroundColor: Colors.transparent,
+                              ),
+                              child: const Text(
+                                'Detail',
+                                style: TextStyle(
+                                  color: Color(0xFF001f3f),
+                                ),
+                              ),
+                            ),
+                          ]
+                        : [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => EditReservationScreen(
+                                      reservation: reservation,
+                                    ),
+                                  ),
+                                ).then((updatedReservation) {
+                                  // Periksa apakah ada reservasi yang diperbarui
+                                  if (updatedReservation != null) {
+                                    // Muat ulang daftar reservasi
+                                    _loadReservations();
+                                  }
+                                });
+                              },
+                              style: TextButton.styleFrom(
+                                backgroundColor: const Color(0xFF001f3f),
+                              ),
+                              child: const Text(
+                                'Edit',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ),
+                            SizedBox(width: 10),
+                            TextButton(
+                              onPressed: () async {
+                                await DatabaseHelperReservasi.instance
+                                    .cancelReservation(reservation['id']);
+                                _loadReservations();
+                              },
+                              style: TextButton.styleFrom(
+                                backgroundColor: const Color(0xFF001f3f),
+                              ),
+                              child: const Text(
+                                'Cancel',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ),
+                          ],
                   ),
                 ],
               ),
@@ -487,6 +564,7 @@ class _ReservasiPageState extends State<ReservasiView> {
       ),
     );
   }
+
 
   Widget _buildActiveReservations() {
     return ListView.builder(
@@ -503,7 +581,7 @@ class _ReservasiPageState extends State<ReservasiView> {
       itemCount: canceledReservations.length,
       itemBuilder: (context, index) {
         final reservation = canceledReservations[index];
-        return _buildReservationDetails(reservation);
+        return _buildReservationDetails(reservation, isHistory: true);
       },
     );
   }
@@ -592,13 +670,16 @@ class _ReservasiPageState extends State<ReservasiView> {
           : isAktifSelected
               ? (activeReservations.isEmpty
                   ? Center(
-                      child: Image.asset(
-                        'lib/asset/reservasi.png',
-                        height: 300,
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 21.0),
+                        child: Image.asset(
+                          'lib/asset/reservasiAktif.png',
+                          height: 280,
+                        ),
                       ),
                     )
                   : _buildActiveReservations())
-              : (canceledReservations.isEmpty 
+              : (canceledReservations.isEmpty
                   ? Center(
                       child: Image.asset(
                         'lib/asset/reservasi.png',

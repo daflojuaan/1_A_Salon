@@ -14,6 +14,7 @@ dependencies:
   camera: ^0.10.5+2
   image_picker: ^0.8.4+8
   mobile_scanner: ^3.5.5
+  flutter_rating_bar: ^4.0.0
   
 dev_dependencies:
   flutter_test:
@@ -29,3 +30,7 @@ flutter:
     - lib/asset/promo 1.jpg
     - lib/asset/promo 2.jpg
     - lib/asset/reservasi.png
+    - lib/asset/1.jpg
+    - lib/asset/2.jpg
+    - lib/asset/3.jpg
+    - lib/asset/4.jpg
