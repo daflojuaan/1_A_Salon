@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:a_salon/database/database_helper.dart';
+import 'dart:convert';
+// import 'package:a_salon/database/database_helper.dart';
 import 'package:a_salon/view/home_page.dart';
 import 'forgot_password_page.dart';
+import 'package:http/http.dart' as http;
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -15,22 +17,41 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _passwordController = TextEditingController();
 
   void _login() async {
-    var user = await DatabaseHelper().getUser(
-      _usernameController.text,
-      _passwordController.text,
-    );
-
-    if (user != null) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => HomePage(user: user)),
+    try {
+      final response = await http.post(
+        Uri.parse('http://192.168.237.62:8000/api/login'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: json.encode({
+          'username': _usernameController.text,
+          'password': _passwordController.text,
+        }),
       );
-    } else {
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        // Handle successful login
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomePage(user: data['user'])),
+        );
+      } else {
+        // Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Login failed'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      // Network error handling
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Invalid username or password'),
+        SnackBar(
+          content: Text('Network error'),
           backgroundColor: Colors.red,
-          behavior: SnackBarBehavior.floating,
         ),
       );
     }
