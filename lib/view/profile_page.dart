@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:a_salon/view/camera_profile_page.dart';
 import 'package:a_salon/view/pengaturan_profile_page.dart';
 import 'package:a_salon/view/edit_profile_page.dart';
+import 'package:a_salon/view/create_pin_page.dart';
 import 'user.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -220,7 +221,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
-                        // Logika untuk membuat PIN 
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CreatePinPage(user: _user),
+                          ),
+                        );
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF6A9AB0),
