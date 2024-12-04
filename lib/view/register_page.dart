@@ -57,7 +57,7 @@ class _RegisterPageState extends State<RegisterPage> {
       // Use full URL with proper protocol
       final response = await http.post(
         Uri.parse(
-            'http://192.168.237.180:8000/api/register'), // Replace with actual backend URL
+            'http://192.168.237.62:8000/api/register'), 
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',

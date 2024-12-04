@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart';
 
 class UserClient {
-  static final String url = '192.168.1.153';
+  static final String url = '192.168.237.62';
   static final String endpoint = '/1_A_Salon_API/public/api';
 
   static Future<List<User>> fetchAll() async {
@@ -22,7 +22,7 @@ class UserClient {
   static Future<Response> create(User user) async {
     try {
       var response = await post(
-        Uri.parse('http://10.0.2.2:8000/api/register'),
+        Uri.parse('http://192.168.237.62:8000/api/register'),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -43,7 +43,7 @@ class UserClient {
   static Future<Response> login(String username, String password) async {
     try {
       var response = await post(
-        Uri.parse('http://10.0.2.2:8000/api/login'),
+        Uri.parse('http://192.168.237.62:8000/api/login'),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
