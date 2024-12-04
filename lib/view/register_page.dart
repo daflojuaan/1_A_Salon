@@ -1,9 +1,13 @@
+import 'package:a_salon/client/user_client.dart';
+import 'package:a_salon/entity/user.dart';
+
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 class RegisterPage extends StatefulWidget {
-  const RegisterPage({Key? key}) : super(key: key);
+  const RegisterPage({super.key, this.id});
+  final int? id;
 
   @override
   _RegisterPageState createState() => _RegisterPageState();
@@ -52,7 +56,8 @@ class _RegisterPageState extends State<RegisterPage> {
     try {
       // Use full URL with proper protocol
       final response = await http.post(
-        Uri.parse('http://192.168.237.62:8000/api/user'),// Replace with actual backend URL
+        Uri.parse(
+            'http://192.168.237.180:8000/api/register'), // Replace with actual backend URL
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -164,6 +169,26 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
+    void onSubmit() async {
+      if (!_validateInputs()) return;
+
+      User user = User(
+        id: widget.id ?? 0,
+        username: _usernameController.text,
+        password: _passwordController.text,
+        email: _emailController.text,
+        phone: _phoneController.text,
+        gender: _selectedGender,
+      );
+      
+      try {
+        await UserClient.create(user);
+        showSnackBar(context, 'Register Success', Colors.green);
+      } catch (err) {
+        showSnackBar(context, err.toString(), Colors.red);
+      }
+    }
+
     return Scaffold(
       backgroundColor: Color(0xFF001f3f),
       body: SafeArea(
@@ -206,7 +231,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 _buildGenderDropdown(),
                 SizedBox(height: 30),
                 ElevatedButton(
-                  onPressed: _register,
+                  onPressed: onSubmit,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Color.fromARGB(255, 255, 255, 255),
                     foregroundColor: Color.fromARGB(255, 0, 31, 63),
@@ -252,4 +277,18 @@ class _RegisterPageState extends State<RegisterPage> {
       ),
     );
   }
+}
+
+void showSnackBar(BuildContext context, String msg, Color bg) {
+  final scaffold = ScaffoldMessenger.of(context);
+  scaffold.showSnackBar(
+    SnackBar(
+      content: Text(msg),
+      backgroundColor: bg,
+      action: SnackBarAction(
+        label: "Hide",
+        onPressed: scaffold.hideCurrentSnackBar,
+      ),
+    ),
+  );
 }

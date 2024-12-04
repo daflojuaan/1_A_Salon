@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
         '/forgot-password': (context) => const ForgotPasswordPage(),
         '/login': (context) => const LoginPage(),
         '/scan': (context) => const ScanPage(),
-        '/reservation': (context) => const ReservationPage(),
+        '/reservation': (context) => const ReservasiView(),
         '/payment': (context) => const PaymentPage(),
         '/topup': (context) => const TopUpSaldoPage(), // Halaman TopUpSaldoPage
         '/barber': (context) => const BarberProfilePage(),

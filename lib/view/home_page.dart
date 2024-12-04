@@ -7,8 +7,7 @@ import 'topup_saldo.dart';
 import 'package:a_salon/view/notification_page.dart';
 
 class HomePage extends StatefulWidget {
-  final User user;
-  const HomePage({super.key, required this.user});
+  const HomePage({super.key});
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -18,7 +17,7 @@ class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
   bool isSaldoVisible = false;
 
-  void _onItemTapped(int index){
+  void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
@@ -34,7 +33,7 @@ class _HomePageState extends State<HomePage> {
     final List<Widget> _pages = [
       _buildHomePage(context),
       const ScanPage(),
-      ProfileScreen(user: widget.user),
+      // ProfileScreen(user: widget.user),
     ];
 
     return Scaffold(
@@ -46,7 +45,7 @@ class _HomePageState extends State<HomePage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_outlined,
-            color: Color(0xFF1B3358)),
+                color: Color(0xFF1B3358)),
             onPressed: () {
               Navigator.push(
                 context,
@@ -98,14 +97,6 @@ class _HomePageState extends State<HomePage> {
                 fontWeight: FontWeight.w800,
                 color: Color(0xFF1B3358),
                 letterSpacing: 0.5,
-              ),
-            ),
-            Text(
-              widget.user.username,
-              style: const TextStyle(
-                fontSize: 18,
-                color: Color(0xFF1B3358),
-                fontWeight: FontWeight.w500,
               ),
             ),
             const SizedBox(height: 20),
@@ -303,89 +294,90 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildPromoSection(BuildContext context, String title,
-    List<Map<String, String>> promoItems) {
-  return Container(
-    height: 200,
-    width: MediaQuery.of(context).size.width * 0.9,
-    color: const Color(0xFF001F3F),
-    alignment: Alignment.topLeft,
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(10.0),
-          child: Text(
-            '-$title-',
-            style: const TextStyle(color: Colors.white, fontSize: 20),
+      List<Map<String, String>> promoItems) {
+    return Container(
+      height: 200,
+      width: MediaQuery.of(context).size.width * 0.9,
+      color: const Color(0xFF001F3F),
+      alignment: Alignment.topLeft,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Text(
+              '-$title-',
+              style: const TextStyle(color: Colors.white, fontSize: 20),
+            ),
           ),
-        ),
-        Expanded(
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: promoItems.length,
-            itemBuilder: (context, index) {
-              final promo = promoItems[index];
-              return GestureDetector(
-                onTap: () => _showPromoNotification(context, promo['title']!),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: _buildPromoBox(promo['image']!),
-                ),
-              );
-            },
+          Expanded(
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: promoItems.length,
+              itemBuilder: (context, index) {
+                final promo = promoItems[index];
+                return GestureDetector(
+                  onTap: () => _showPromoNotification(context, promo['title']!),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: _buildPromoBox(promo['image']!),
+                  ),
+                );
+              },
+            ),
           ),
-        ),
-      ],
-    ),
-  );
-}
+        ],
+      ),
+    );
+  }
 
-void _showPromoNotification(BuildContext context, String promoTitle) {
-  showModalBottomSheet(
-    context: context,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-    ),
-    builder: (context) {
-      return Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Detail Promo',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1B3358),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              promoTitle,
-              style: const TextStyle(
-                fontSize: 16,
-                color: Colors.black87,
-              ),
-            ),
-            const SizedBox(height: 20),
-            Align(
-              alignment: Alignment.centerRight,
-              child: ElevatedButton(
-                onPressed: () => Navigator.pop(context),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF1B3358),
+  void _showPromoNotification(BuildContext context, String promoTitle) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Detail Promo',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1B3358),
                 ),
-                child: const Text('Tutup'),
               ),
-            ),
-          ],
-        ),
-      );
-    },
-  );
-}
+              const SizedBox(height: 10),
+              Text(
+                promoTitle,
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Align(
+                alignment: Alignment.centerRight,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF1B3358),
+                  ),
+                  child: const Text('Tutup'),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildPromoBox(String imagePath) {
     return Container(
       width: 380,

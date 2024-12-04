@@ -1,9 +1,11 @@
+import 'package:a_salon/client/user_client.dart';
+import 'package:a_salon/view/register_page.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
+import 'package:http/http.dart' as http;
 // import 'package:a_salon/database/database_helper.dart';
 import 'package:a_salon/view/home_page.dart';
 import 'forgot_password_page.dart';
-import 'package:http/http.dart' as http;
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -19,7 +21,7 @@ class _LoginPageState extends State<LoginPage> {
   void _login() async {
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.237.62:8000/api/login'),
+        Uri.parse('http://192.168.237.180:8000/api/login'),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -35,7 +37,7 @@ class _LoginPageState extends State<LoginPage> {
         // Handle successful login
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => HomePage(user: data['user'])),
+          MaterialPageRoute(builder: (context) => HomePage()),
         );
       } else {
         // Show error message
@@ -59,6 +61,48 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    void onSubmit() async {
+      if (_usernameController.text.isEmpty || _passwordController.text.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Username dan password harus diisi'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      try {
+        final response = await UserClient.login(
+          _usernameController.text, 
+          _passwordController.text
+        );
+
+        // Parsing response jika perlu
+        final responseBody = json.decode(response.body);
+        
+        // Navigasi ke halaman utama setelah login berhasil
+        Navigator.pushReplacement(
+          context, 
+          MaterialPageRoute(builder: (context) => HomePage())
+        );
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Login Berhasil'),
+            backgroundColor: Colors.green,
+          )
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Login Gagal: $e'),
+            backgroundColor: Colors.red,
+          )
+        );
+      }
+    }
+
     return Scaffold(
       resizeToAvoidBottomInset: true,
       backgroundColor: const Color(0xFF001f3f),
@@ -75,7 +119,7 @@ class _LoginPageState extends State<LoginPage> {
                 height: 150, // Adjust height as needed
               ),
               const SizedBox(height: 20),
-              
+
               Card(
                 elevation: 8,
                 shape: RoundedRectangleBorder(
@@ -101,7 +145,8 @@ class _LoginPageState extends State<LoginPage> {
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          prefixIcon: Icon(Icons.person, color: const Color(0xFF001f3f)),
+                          prefixIcon: Icon(Icons.person,
+                              color: const Color(0xFF001f3f)),
                           hintText: 'Enter your username',
                           labelText: 'Username',
                         ),
@@ -113,7 +158,8 @@ class _LoginPageState extends State<LoginPage> {
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          prefixIcon: Icon(Icons.lock, color: Color(0xFF001f3f)),
+                          prefixIcon:
+                              Icon(Icons.lock, color: Color(0xFF001f3f)),
                           hintText: 'Enter your password',
                           labelText: 'Password',
                         ),
@@ -131,7 +177,7 @@ class _LoginPageState extends State<LoginPage> {
                             vertical: 15,
                           ),
                         ),
-                        onPressed: _login,
+                        onPressed: onSubmit,
                         child: const Text(
                           'Login',
                           style: TextStyle(fontSize: 18, color: Colors.white),
@@ -153,7 +199,8 @@ class _LoginPageState extends State<LoginPage> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => const ForgotPasswordPage()),
+                                builder: (context) =>
+                                    const ForgotPasswordPage()),
                           );
                         },
                         child: const Text(

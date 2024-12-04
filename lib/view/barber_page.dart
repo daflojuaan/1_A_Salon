@@ -324,10 +324,7 @@ class ServicesBottomSheet extends StatelessWidget {
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => ReservationPage(
-                      initiallyShowForm: true, // Parameter baru untuk langsung menampilkan form
-                      preselectedBarber: name,
-                      availableServices: specialties,
+                    builder: (context) => ReservasiView(
                     ),
                   ),
                 );
