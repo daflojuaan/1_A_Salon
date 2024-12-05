@@ -1,9 +1,6 @@
 import 'package:a_salon/client/user_client.dart';
 import 'package:a_salon/entity/user.dart';
-
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key, this.id});
@@ -43,58 +40,6 @@ class _RegisterPageState extends State<RegisterPage> {
       return false;
     }
     return true;
-  }
-
-  // Improved registration method
-  void _register() async {
-    if (!_validateInputs()) return;
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      // Use full URL with proper protocol
-      final response = await http.post(
-        Uri.parse(
-            'http://192.168.237.180:8000/api/register'), // Replace with actual backend URL
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: json.encode({
-          'username': _usernameController.text,
-          'email': _emailController.text,
-          'password': _passwordController.text,
-          'phone': _phoneController.text,
-          'gender': _selectedGender,
-        }),
-      );
-
-      setState(() {
-        _isLoading = false;
-      });
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        // Successful registration
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Registration Successful'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        Navigator.pop(context); // Or navigate to login page
-      } else {
-        // Handle specific error responses
-        final errorBody = json.decode(response.body);
-        _showError(errorBody['message'] ?? 'Registration failed');
-      }
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-      _showError('Network error: $e');
-    }
   }
 
   // Build TextField widget

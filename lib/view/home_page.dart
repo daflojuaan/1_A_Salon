@@ -1,13 +1,12 @@
-import 'package:a_salon/view/profile_page.dart';
 import 'package:a_salon/view/scan_page.dart';
+import 'package:a_salon/view/profile_page.dart';
 import 'package:flutter/material.dart';
-import 'package:a_salon/database/database_helper.dart';
 import 'package:a_salon/view/user.dart';
-import 'topup_saldo.dart';
 import 'package:a_salon/view/notification_page.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final Map<String, dynamic> user;
+  const HomePage({super.key, required this.user});
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -17,6 +16,12 @@ class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
   bool isSaldoVisible = false;
 
+  @override
+  void initState() {
+    super.initState();
+    print('User Data: ${widget.user}'); // Tambahkan ini
+  }
+
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -24,16 +29,19 @@ class _HomePageState extends State<HomePage> {
   }
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final List<Widget> _pages = [
       _buildHomePage(context),
       const ScanPage(),
-      // ProfileScreen(user: widget.user),
+      ProfileScreen(
+        user: User(
+          id: widget.user['id'],
+          username: widget.user['username'],
+          password: widget.user['password'] ?? '', // gunakan null safety
+          email: widget.user['email'],
+          phone: widget.user['phone'],
+          gender: widget.user['gender']
+        ))
     ];
 
     return Scaffold(
@@ -90,9 +98,9 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'SELAMAT DATANG,',
-              style: TextStyle(
+            Text(
+              'SELAMAT DATANG, ${widget.user['username'].toUpperCase()}',
+              style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w800,
                 color: Color(0xFF1B3358),
