@@ -1,9 +1,9 @@
-import 'dart:io';
-import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:a_salon/view/camera_profile_page.dart';
-import 'package:a_salon/view/pengaturan_profile_page.dart';
-import 'package:http/http.dart' as http;
+  import 'dart:io';
+  import 'package:flutter/material.dart';
+  import 'package:image_picker/image_picker.dart';
+  import 'package:a_salon/view/camera_profile_page.dart';
+  import 'package:a_salon/view/pengaturan_profile_page.dart';
+ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -201,82 +201,73 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Center(
-                child: Column(
-                  children: [
-                    const Text(
-                      'Profile',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Stack(
-                      children: [
-                        CircleAvatar(
-                          radius: 60,
-                          backgroundImage: _profileImage != null
-                              ? FileImage(_profileImage!)
-                              : (userData['profile_image_url'] != null
-                                  ? NetworkImage(userData['profile_image_url'])
-                                      as ImageProvider
-                                  : null),
-                          child: (_profileImage == null &&
-                                  userData['profile_image_url'] == null)
-                              ? const Icon(Icons.person,
-                                  size: 50, color: Colors.white)
-                              : null,
-                          backgroundColor: const Color(0xFF001F3F),
+    Widget build(BuildContext context) {
+      return Scaffold(
+        backgroundColor: Colors.white,
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Center(
+                  child: Column(
+                    children: [
+                      const Text(
+                        'Profile',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
                         ),
-                        Positioned(
-                          bottom: 0,
-                          right: 0,
-                          child: InkWell(
-                            onTap: _showImageSourceActionSheet,
-                            child: Container(
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Color(0xFF6A9AB0),
+                      ),
+                      const SizedBox(height: 10), 
+                      Stack(
+                        children: [
+                          CircleAvatar(
+                            radius: 60,
+                            backgroundImage: _profileImage != null
+                                ? FileImage(_profileImage!)
+                                : null,
+                            child: _profileImage == null
+                                ? const Icon(Icons.person, size: 50, color: Colors.white)
+                                : null,
+                              backgroundColor: const Color(0xFF001F3F),
+                          ),
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: InkWell(
+                              onTap: _showImageSourceActionSheet,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: const Color(0xFF6A9AB0),
+                                ),
+                                padding: const EdgeInsets.all(8),
+                                child: const Icon(Icons.camera_alt, color: Colors.white),
                               ),
-                              padding: const EdgeInsets.all(8),
-                              child: const Icon(Icons.camera_alt,
-                                  color: Colors.white),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 10),
-              Center(
-                child: Text(
-                  userData['user']['username'] ?? 'Guest', // Handle null values
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              _buildProfileInfoCard(
+
+                const SizedBox(height: 10),
+                Center(
+                  child: Text(
+                    userData['user']['username'] ?? 'Guest',
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                _buildProfileInfoCard(
                   'Username', userData['user']['username'] ?? 'Not available'),
               _buildProfileInfoCard(
                   'Email', userData['user']['email'] ?? 'Not available'),
@@ -284,12 +275,76 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   'Phone', userData['user']['phone'] ?? 'Not available'),
               _buildProfileInfoCard(
                   'Gender', userData['user']['gender'] ?? 'Not available'),
-            ],
+                // const SizedBox(height: 20),
+                // // Settings Button
+                // SizedBox(
+                //   width: 150,
+                //   child: ElevatedButton(
+                //     onPressed: () {
+                //       Navigator.push(
+                //         context,
+                //         MaterialPageRoute(
+                //           builder: (context) => PengaturanProfilePage(user: _user),
+                //         ),
+                //       );
+                //     },
+                //     style: ElevatedButton.styleFrom(
+                //       backgroundColor: const Color(0xFF6A9AB0),
+                //       foregroundColor: Colors.white, 
+                //       padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                //       minimumSize: const Size(0, 20),
+                //     ),
+                //     child: const Text('Settings', style: TextStyle(fontSize: 16)),
+                //   ),
+                // ),
+                // const SizedBox(height: 20),
+                // Row(
+                //   mainAxisAlignment: MainAxisAlignment.spaceBetween, 
+                //   children: [
+                //     Expanded(
+                //       child: ElevatedButton(
+                //         onPressed: () async {
+                //           final updatedUser = await Navigator.push(
+                //             context,
+                //             MaterialPageRoute(
+                //               builder: (context) => EditProfilePage(user: _user),
+                //             ),
+                //           );
+
+                //           if (updatedUser != null) {
+                //             _updateUser(updatedUser);
+                //           }
+                //         },
+                //         style: ElevatedButton.styleFrom(
+                //           backgroundColor: const Color(0xFF6A9AB0),
+                //           foregroundColor: Colors.white,
+                //           padding: const EdgeInsets.symmetric(vertical: 15),
+                //         ),
+                //         child: const Text('Edit Profile', style: TextStyle(fontSize: 16)),
+                //       ),
+                //     ),
+                //     const SizedBox(width: 10), 
+                //     Expanded(
+                //       child: ElevatedButton(
+                //         onPressed: () {
+                //           // Logika untuk membuat PIN 
+                //         },
+                //         style: ElevatedButton.styleFrom(
+                //           backgroundColor: const Color(0xFF6A9AB0),
+                //           foregroundColor: Colors.white,
+                //           padding: const EdgeInsets.symmetric(vertical: 15),
+                //         ),
+                //         child: const Text('Buat PIN', style: TextStyle(fontSize: 16)),
+                //       ),
+                //     ),
+                //   ],
+                // ),
+              ],
+            ),
           ),
         ),
-      ),
-    );
-  }
+      );
+    }
 
   Widget _buildProfileInfoCard(String label, String value) {
     return Card(
