@@ -1,12 +1,10 @@
 import 'package:a_salon/view/scan_page.dart';
 import 'package:a_salon/view/profile_page.dart';
 import 'package:flutter/material.dart';
-import 'package:a_salon/view/user.dart';
 import 'package:a_salon/view/notification_page.dart';
 
 class HomePage extends StatefulWidget {
-  final Map<String, dynamic> user;
-  const HomePage({super.key, required this.user});
+  const HomePage({super.key});
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -15,12 +13,10 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
   bool isSaldoVisible = false;
-
-  @override
-  void initState() {
-    super.initState();
-    print('User Data: ${widget.user}'); // Tambahkan ini
-  }
+  
+  Map<String, dynamic> userData = {
+    'username': 'Guest',
+  };
 
   void _onItemTapped(int index) {
     setState(() {
@@ -28,22 +24,14 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  List<Widget> get _pages => [
+    _buildHomePage(context),
+    const ScanPage(),
+    const ProfileScreen(), // Assuming you have a normal ProfilePage without user parameter
+  ];
+
   @override
   Widget build(BuildContext context) {
-    final List<Widget> _pages = [
-      _buildHomePage(context),
-      const ScanPage(),
-      ProfileScreen(
-        user: User(
-          id: widget.user['id'],
-          username: widget.user['username'],
-          password: widget.user['password'] ?? '', // gunakan null safety
-          email: widget.user['email'],
-          phone: widget.user['phone'],
-          gender: widget.user['gender']
-        ))
-    ];
-
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -65,7 +53,7 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      body: _pages[_selectedIndex], // Menampilkan halaman aktif
+      body: _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
@@ -99,7 +87,7 @@ class _HomePageState extends State<HomePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'SELAMAT DATANG, ${widget.user['username'].toUpperCase()}',
+              'SELAMAT DATANG, ${userData['username']?.toUpperCase() ?? 'GUEST'}',
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w800,

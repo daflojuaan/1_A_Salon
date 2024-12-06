@@ -1,47 +1,117 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'ganti_password_page.dart';
-import 'user.dart';
-import 'package:a_salon/database/database_helper.dart';
 
-class PengaturanProfilePage extends StatelessWidget {
-  final User user;
+class PengaturanProfilePage extends StatefulWidget {
+  final Map<String, dynamic> userData;
 
-  const PengaturanProfilePage({super.key, required this.user});
+  const PengaturanProfilePage({super.key, required this.userData});
+
+  @override
+  _PengaturanProfilePageState createState() => _PengaturanProfilePageState();
+}
+
+class _PengaturanProfilePageState extends State<PengaturanProfilePage> {
+  bool _isLoading = false;
 
   void _navigateToChangePassword(BuildContext context) {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => GantiPasswordPage(
-          user: user,
-          changePassword: _changePassword,
+          userData: widget.userData,
+          onPasswordChanged: _handlePasswordChange,
         ),
       ),
     );
   }
 
-  Future<bool> _changePassword(
-      BuildContext context, String oldPassword, String newPassword) async {
-    User? user =
-        await DatabaseHelper().getUser(this.user.username, oldPassword);
+  Future<bool> _handlePasswordChange(String oldPassword, String newPassword) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
 
-    if (user != null) {
-      User updatedUser = User(
-        id: user.id,
-        username: user.username,
-        password: newPassword,
-        email: user.email,
-        phone: user.phone,
-        gender: user.gender,
+      if (token == null) {
+        throw Exception('User not logged in');
+      }
+
+      final response = await http.put(
+        Uri.parse('http://192.168.237.62/api/profile/password'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'current_password': oldPassword,
+          'new_password': newPassword,
+        }),
       );
 
-      await DatabaseHelper().updateUserPassword(updatedUser);
-      return true;
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        final errorData = json.decode(response.body);
+        throw Exception(errorData['message'] ?? 'Failed to update password');
+      }
+    } catch (e) {
+      if (!mounted) return false;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${e.toString()}')),
+      );
+      return false;
     }
-    return false;
   }
 
-  void _deleteAccount(BuildContext context) async {
+  Future<void> _deleteAccount(BuildContext context) async {
+    try {
+      setState(() {
+        _isLoading = true;
+      });
+
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      if (token == null) {
+        throw Exception('User not logged in');
+      }
+
+      final response = await http.delete(
+        Uri.parse('http://192.168.237.62/api/profile/delete'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        await prefs.clear();
+        if (!mounted) return;
+        Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Account deleted successfully')),
+        );
+      } else {
+        final errorData = json.decode(response.body);
+        throw Exception(errorData['message'] ?? 'Failed to delete account');
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${e.toString()}')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  void _confirmDeleteAccount(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -50,35 +120,69 @@ class PengaturanProfilePage extends StatelessWidget {
         content: const Text('Apakah Anda yakin ingin menghapus akun ini?'),
         actions: <Widget>[
           TextButton(
-            onPressed: () {
-              Navigator.of(context).pop(); 
-            },
-              style: TextButton.styleFrom(
-                foregroundColor: const Color(0xFF001f3f), // Warna teks
-                backgroundColor:const Color(0xFF6A9AB0), // Warna tombol
-              ),
+            onPressed: () => Navigator.of(context).pop(),
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFF001f3f),
+              backgroundColor: const Color(0xFF6A9AB0),
+            ),
             child: const Text('Batal'),
           ),
           TextButton(
-            onPressed: () async {
-              Navigator.of(context).pop(); 
-              await DatabaseHelper().deleteUser(user.username);
-
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                content: Text('Akun Anda berhasil terhapus.'),
-              ));
-
-              Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+            onPressed: _isLoading ? null : () {
+              Navigator.of(context).pop();
+              _deleteAccount(context);
             },
-              style: TextButton.styleFrom(
-                foregroundColor: const Color(0xFF001f3f), // Warna teks
-                backgroundColor:const Color(0xFF6A9AB0), // Warna tombol
-              ),
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFF001f3f),
+              backgroundColor: const Color(0xFF6A9AB0),
+            ),
             child: const Text('Hapus'),
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _logout(BuildContext context) async {
+    try {
+      setState(() {
+        _isLoading = true;
+      });
+
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      if (token == null) {
+        throw Exception('User not logged in');
+      }
+
+      final response = await http.post(
+        Uri.parse('http://192.168.237.62/api/logout'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Accept': 'application/json',
+        },
+      );
+
+      await prefs.clear();
+
+      if (response.statusCode == 200) {
+        if (!mounted) return;
+        Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+      } else {
+        throw Exception('Failed to logout');
+      }
+    } catch (e) {
+      if (!mounted) return;
+      // Still clear preferences and navigate to login even if API call fails
+      Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   void _confirmLogout(BuildContext context) {
@@ -91,9 +195,7 @@ class PengaturanProfilePage extends StatelessWidget {
           content: const Text("Apakah ingin keluar dari akun?"),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Tutup dialog
-              },
+              onPressed: () => Navigator.of(context).pop(),
               style: TextButton.styleFrom(
                 foregroundColor: const Color(0xFF001f3f),
                 backgroundColor: const Color(0xFF6A9AB0),
@@ -101,8 +203,8 @@ class PengaturanProfilePage extends StatelessWidget {
               child: const Text('Tidak'),
             ),
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Tutup dialog
+              onPressed: _isLoading ? null : () {
+                Navigator.of(context).pop();
                 _logout(context);
               },
               style: TextButton.styleFrom(
@@ -117,87 +219,100 @@ class PengaturanProfilePage extends StatelessWidget {
     );
   }
 
-  void _logout(BuildContext context) {
-    Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Pengaturan Profil'),
-        centerTitle: true,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            InkWell(
-              onTap: () => _navigateToChangePassword(context),
-              child: Container(
-                padding: const EdgeInsets.all(16.0),
-                margin: const EdgeInsets.symmetric(vertical: 8.0),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF6A9AB0),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Row(
-                  children: const [
-                    Icon(Icons.lock, color: Colors.white),
-                    SizedBox(width: 16),
-                    Text(
-                      'Ganti Password',
-                      style: TextStyle(color: Colors.white, fontSize: 16),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            InkWell(
-              onTap: () => _deleteAccount(context),
-              child: Container(
-                padding: const EdgeInsets.all(16.0),
-                margin: const EdgeInsets.symmetric(vertical: 8.0),
-                decoration: BoxDecoration(
-                  color: Colors.red[600],
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Row(
-                  children: const [
-                    Icon(Icons.delete, color: Colors.white),
-                    SizedBox(width: 16),
-                    Text(
-                      'Delete Account',
-                      style: TextStyle(color: Colors.white, fontSize: 16),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            InkWell(
-              onTap: () => _confirmLogout(context),
-              child: Container(
-                padding: const EdgeInsets.all(16.0),
-                margin: const EdgeInsets.symmetric(vertical: 8.0),
-                decoration: BoxDecoration(
-                  color: Colors.orange[600],
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Row(
-                  children: const [
-                    Icon(Icons.logout, color: Colors.white),
-                    SizedBox(width: 16),
-                    Text(
-                      'Logout',
-                      style: TextStyle(color: Colors.white, fontSize: 16),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
+        title: const Text(
+          'Pengaturan Profil',
+          style: TextStyle(color: Color(0xFF001F3F)),
         ),
+        centerTitle: true,
+        backgroundColor: Colors.white,
+        iconTheme: const IconThemeData(color: Color(0xFF001F3F)),
+        elevation: 0,
+      ),
+      body: Stack(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                InkWell(
+                  onTap: _isLoading ? null : () => _navigateToChangePassword(context),
+                  child: Container(
+                    padding: const EdgeInsets.all(16.0),
+                    margin: const EdgeInsets.symmetric(vertical: 8.0),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF6A9AB0),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      children: const [
+                        Icon(Icons.lock, color: Colors.white),
+                        SizedBox(width: 16),
+                        Text(
+                          'Ganti Password',
+                          style: TextStyle(color: Colors.white, fontSize: 16),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                InkWell(
+                  onTap: _isLoading ? null : () => _confirmDeleteAccount(context),
+                  child: Container(
+                    padding: const EdgeInsets.all(16.0),
+                    margin: const EdgeInsets.symmetric(vertical: 8.0),
+                    decoration: BoxDecoration(
+                      color: Colors.red[600],
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      children: const [
+                        Icon(Icons.delete, color: Colors.white),
+                        SizedBox(width: 16),
+                        Text(
+                          'Delete Account',
+                          style: TextStyle(color: Colors.white, fontSize: 16),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                InkWell(
+                  onTap: _isLoading ? null : () => _confirmLogout(context),
+                  child: Container(
+                    padding: const EdgeInsets.all(16.0),
+                    margin: const EdgeInsets.symmetric(vertical: 8.0),
+                    decoration: BoxDecoration(
+                      color: Colors.orange[600],
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      children: const [
+                        Icon(Icons.logout, color: Colors.white),
+                        SizedBox(width: 16),
+                        Text(
+                          'Logout',
+                          style: TextStyle(color: Colors.white, fontSize: 16),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (_isLoading)
+            Container(
+              color: Colors.black26,
+              child: const Center(
+                child: CircularProgressIndicator(),
+              ),
+            ),
+        ],
       ),
     );
   }

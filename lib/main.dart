@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => const LoginPage(), // Halaman pertama (LoginPage)
         '/register': (context) => const RegisterPage(),
-        '/forgot-password': (context) => const ForgotPasswordPage(),
+        // '/forgot-password': (context) => const ForgotPasswordPage(),
         '/login': (context) => const LoginPage(),
         '/scan': (context) => const ScanPage(),
         '/reservation': (context) => const ReservasiView(),
