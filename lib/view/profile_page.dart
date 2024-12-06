@@ -6,6 +6,7 @@
   import 'package:a_salon/view/edit_profile_page.dart';
   import 'user.dart';
 
+
   class ProfileScreen extends StatefulWidget {
     final User user;
 
@@ -228,6 +229,7 @@
                           padding: const EdgeInsets.symmetric(vertical: 15),
                         ),
                         child: const Text('Buat PIN', style: TextStyle(fontSize: 16)),
+
                       ),
                     ),
                   ],
