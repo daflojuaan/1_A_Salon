@@ -1,20 +1,20 @@
 class User {
-  final int? id;
+  final int id;
   final String username;
-  final String password;
+  final String password;  // tambahkan ini
   final String email;
   final String phone;
   final String gender;
 
   User({
-    this.id,
+    required this.id,
     required this.username,
-    required this.password,
+    this.password = '',  // buat opsional dengan default value
     required this.email,
     required this.phone,
     required this.gender,
   });
-
+  
   // Convert User object to a Map for database insertion
   Map<String, dynamic> toMap() {
     return {

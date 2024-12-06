@@ -1,9 +1,6 @@
 import 'package:a_salon/client/user_client.dart';
-import 'package:a_salon/view/register_page.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
-import 'package:http/http.dart' as http;
-// import 'package:a_salon/database/database_helper.dart';
 import 'package:a_salon/view/home_page.dart';
 import 'forgot_password_page.dart';
 
@@ -18,87 +15,30 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  void _login() async {
-    try {
-      final response = await http.post(
-        Uri.parse('http://192.168.237.62:8000/api/login'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: json.encode({
-          'username': _usernameController.text,
-          'password': _passwordController.text,
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        // Handle successful login
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => HomePage()),
-        );
-      } else {
-        // Show error message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Login failed'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } catch (e) {
-      // Network error handling
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Network error'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     void onSubmit() async {
-      if (_usernameController.text.isEmpty || _passwordController.text.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Username dan password harus diisi'),
-            backgroundColor: Colors.red,
-          ),
-        );
-        return;
-      }
-
       try {
         final response = await UserClient.login(
           _usernameController.text, 
           _passwordController.text
         );
-
-        // Parsing response jika perlu
-        final responseBody = json.decode(response.body);
         
-        // Navigasi ke halaman utama setelah login berhasil
+        final responseBody = json.decode(response.body);
+        print('Response Body: $responseBody'); // Tambahkan ini
+        
         Navigator.pushReplacement(
           context, 
-          MaterialPageRoute(builder: (context) => HomePage())
+          MaterialPageRoute(builder: (context) => HomePage(user: responseBody['user']))
         );
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Login Berhasil'),
-            backgroundColor: Colors.green,
-          )
+          SnackBar(content: Text('Login Berhasil'), backgroundColor: Colors.green)
         );
       } catch (e) {
+        print('Error: $e'); // Tambahkan ini
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Login Gagal: $e'),
-            backgroundColor: Colors.red,
-          )
+          SnackBar(content: Text('Login Gagal: $e'), backgroundColor: Colors.red)
         );
       }
     }

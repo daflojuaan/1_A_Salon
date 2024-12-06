@@ -1,7 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
-class DatabaseHelperReservasi{
+class DatabaseHelperReservasi {
   // Database name and version
   static const _databaseName = 'reservasi.db';
   static const _databaseVersion = 1;
@@ -99,12 +99,12 @@ class DatabaseHelperReservasi{
     );
   }
 
-// update reservasi di riwayat menjadi cancel
+// update reservasi di riwayat menjadiselse
 Future<int> cancelReservation(int id) async {
   Database db = await database;
   return await db.update(
     table,
-    {columnStatus: 'Canceled'}, 
+    {columnStatus: 'Selesai'}, 
     where: '$columnId = ?',
     whereArgs: [id],
   );
@@ -116,7 +116,7 @@ Future<List<Map<String, dynamic>>> getCanceledReservations() async {
   return await db.query(
     table,
     where: '$columnStatus = ?',
-    whereArgs: ['Canceled'],
+    whereArgs: ['Selesai'],
     orderBy: '$columnDate DESC',
   );
 }

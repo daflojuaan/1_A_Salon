@@ -47,6 +47,7 @@ class UserClient {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
+
         },
         body: json.encode({
           'username': username,
@@ -63,5 +64,49 @@ class UserClient {
       return Future.error(e.toString());
     }
   }
-  
+
+  static Future<Response> getProfile(int id) async {
+    try {
+      var response = await get(
+        Uri.parse('http://192.168.237.62:8000/api/profile/$id'),
+        headers: {
+          'Accept': 'application/json',
+        },
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to get profile: ${response.body}');
+      }
+
+      return response;
+    } catch (e) {
+      return Future.error(e.toString());
+    }
+  }
+
+  static Future<Response> updateProfile(int id, User user) async {
+    try {
+      var response = await put(
+        Uri.parse('http://192.168.237.62:8000/api/profile/$id'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: json.encode({
+          'username': user.username,
+          'email': user.email,
+          'phone': user.phone,
+          'gender': user.gender,
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to update profile: ${response.body}');
+      }
+
+      return response;
+    } catch (e) {
+      return Future.error(e.toString());
+    }
+  }
 }
