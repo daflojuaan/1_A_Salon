@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:a_salon/view/login_page.dart';
 import 'package:a_salon/view/register_page.dart';
-import 'package:a_salon/view/forgot_password_page.dart';
+// import 'package:a_salon/view/forgot_password_page.dart';
 import 'package:a_salon/view/scan_page.dart';
 import 'package:a_salon/view/payment_page.dart';
 import 'package:a_salon/view/reservation_page.dart';
@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => const LoginPage(), // Halaman pertama (LoginPage)
         '/register': (context) => const RegisterPage(),
-        '/forgot-password': (context) => const ForgotPasswordPage(),
+        // '/forgot-password': (context) => const ForgotPasswordPage(),
         '/login': (context) => const LoginPage(),
         '/scan': (context) => const ScanPage(),
         '/reservation': (context) => const ReservasiView(),
