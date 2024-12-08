@@ -5,8 +5,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class EditProfilePage extends StatefulWidget {
   final Map<String, dynamic> userData;
-
-  const EditProfilePage({super.key, required this.userData});
+  
+  const EditProfilePage({
+    Key? key,
+    required this.userData,
+  }) : super(key: key);
 
   @override
   _EditProfilePageState createState() => _EditProfilePageState();
@@ -43,16 +46,24 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
     try {
       final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
+      final userId = prefs.getInt('userId');
 
-      if (token == null) {
+      if (userId == null) {
         throw Exception('User not logged in');
       }
 
+      // Debug print untuk melihat data yang akan dikirim
+      print('Sending update for user ID: $userId');
+      print('Update data: ${json.encode({
+        'username': _usernameController.text,
+        'email': _emailController.text,
+        'phone': _phoneController.text,
+        'gender': _selectedGender,
+      })}');
+
       final response = await http.put(
-        Uri.parse('http://192.168.237.62/api/profile/update'),
+        Uri.parse('http://192.168.237.62:8000/api/profile/update/$userId'),
         headers: {
-          'Authorization': 'Bearer $token',
           'Accept': 'application/json',
           'Content-Type': 'application/json',
         },
@@ -63,6 +74,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
           'gender': _selectedGender,
         }),
       );
+
+      // Debug print untuk response
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         if (!mounted) return;

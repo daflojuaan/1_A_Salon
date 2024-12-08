@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'ganti_password_page.dart';
+import 'package:a_salon/view/ganti_password_page.dart';
 
 class PengaturanProfilePage extends StatefulWidget {
   final Map<String, dynamic> userData;
 
-  const PengaturanProfilePage({super.key, required this.userData});
+  const PengaturanProfilePage({
+    Key? key,
+    required this.userData,
+  }) : super(key: key);
 
   @override
   _PengaturanProfilePageState createState() => _PengaturanProfilePageState();
@@ -15,6 +18,38 @@ class PengaturanProfilePage extends StatefulWidget {
 
 class _PengaturanProfilePageState extends State<PengaturanProfilePage> {
   bool _isLoading = false;
+
+  void _navigateToLogin() {
+    // Pastikan navigasi dilakukan pada context yang benar
+    Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+  }
+
+  Future<void> _showSuccessDialog(BuildContext context, String message) async {
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) => AlertDialog(
+        backgroundColor: const Color(0xFFEAD8B0),
+        title: const Text('Berhasil'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () {
+              // Tutup dialog terlebih dahulu
+              Navigator.of(dialogContext).pop();
+              // Kemudian navigasi ke login
+              _navigateToLogin();
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFF001f3f),
+              backgroundColor: const Color(0xFF6A9AB0),
+            ),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
 
   void _navigateToChangePassword(BuildContext context) {
     Navigator.push(
@@ -31,36 +66,74 @@ class _PengaturanProfilePageState extends State<PengaturanProfilePage> {
   Future<bool> _handlePasswordChange(String oldPassword, String newPassword) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
+      final userId = prefs.getInt('userId');
 
-      if (token == null) {
+      if (userId == null) {
         throw Exception('User not logged in');
       }
 
       final response = await http.put(
-        Uri.parse('http://192.168.237.62/api/profile/password'),
+        Uri.parse('http://192.168.237.62:8000/api/profile/password/$userId'),
         headers: {
-          'Authorization': 'Bearer $token',
           'Accept': 'application/json',
           'Content-Type': 'application/json',
         },
         body: json.encode({
           'current_password': oldPassword,
           'new_password': newPassword,
+          'password_confirmation': newPassword,
         }),
       );
 
+      print('Password change response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
       if (response.statusCode == 200) {
+        if (!mounted) return false;
+        
+        // Show success dialog
+        await showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext dialogContext) => AlertDialog(
+            backgroundColor: const Color(0xFFEAD8B0),
+            title: const Text('Berhasil'),
+            content: const Text('Password berhasil diubah'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  // Close dialog first
+                  Navigator.of(dialogContext).pop();
+                  // Then go back to profile page
+                  Navigator.of(context).pop();
+                },
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color(0xFF001f3f),
+                  backgroundColor: const Color(0xFF6A9AB0),
+                ),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+        
         return true;
       } else {
         final errorData = json.decode(response.body);
         throw Exception(errorData['message'] ?? 'Failed to update password');
       }
     } catch (e) {
+      print('Error changing password: $e');
       if (!mounted) return false;
+      
+      // Show error message
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.toString()}')),
+        SnackBar(
+          content: Text('Error: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
       );
+      
       return false;
     }
   }
@@ -72,55 +145,62 @@ class _PengaturanProfilePageState extends State<PengaturanProfilePage> {
       });
 
       final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
+      final userId = prefs.getInt('userId');
 
-      if (token == null) {
+      if (userId == null) {
         throw Exception('User not logged in');
       }
 
       final response = await http.delete(
-        Uri.parse('http://192.168.237.62/api/profile/delete'),
+        Uri.parse('http://192.168.237.62:8000/api/profile/delete/$userId'),
         headers: {
-          'Authorization': 'Bearer $token',
           'Accept': 'application/json',
+          'Content-Type': 'application/json',
         },
       );
 
+      // Clear preferences setelah response diterima
+      await prefs.clear();
+
+      if (!mounted) return;
+
+      setState(() {
+        _isLoading = false;
+      });
+
       if (response.statusCode == 200) {
-        await prefs.clear();
-        if (!mounted) return;
-        Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Account deleted successfully')),
-        );
+        // Tampilkan dialog dan tunggu sampai selesai
+        await _showSuccessDialog(context, 'Akun berhasil dihapus');
       } else {
-        final errorData = json.decode(response.body);
-        throw Exception(errorData['message'] ?? 'Failed to delete account');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Gagal menghapus akun')),
+        );
+        _navigateToLogin();
       }
     } catch (e) {
+      print('Error deleting account: $e');
       if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+      });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: ${e.toString()}')),
       );
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      _navigateToLogin();
     }
   }
 
   void _confirmDeleteAccount(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) => AlertDialog(
         backgroundColor: const Color(0xFFEAD8B0),
         title: const Text('Konfirmasi Penghapusan Akun'),
         content: const Text('Apakah Anda yakin ingin menghapus akun ini?'),
         actions: <Widget>[
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => Navigator.of(dialogContext).pop(),
             style: TextButton.styleFrom(
               foregroundColor: const Color(0xFF001f3f),
               backgroundColor: const Color(0xFF6A9AB0),
@@ -129,7 +209,7 @@ class _PengaturanProfilePageState extends State<PengaturanProfilePage> {
           ),
           TextButton(
             onPressed: _isLoading ? null : () {
-              Navigator.of(context).pop();
+              Navigator.of(dialogContext).pop();
               _deleteAccount(context);
             },
             style: TextButton.styleFrom(
@@ -143,79 +223,88 @@ class _PengaturanProfilePageState extends State<PengaturanProfilePage> {
     );
   }
 
-  Future<void> _logout(BuildContext context) async {
+    Future<void> _logout(BuildContext context) async {
     try {
       setState(() {
         _isLoading = true;
       });
 
       final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
+      final userId = prefs.getInt('userId');
 
-      if (token == null) {
+      if (userId == null) {
         throw Exception('User not logged in');
       }
 
       final response = await http.post(
-        Uri.parse('http://192.168.237.62/api/logout'),
+        Uri.parse('http://192.168.237.62:8000/api/profile/logout/$userId'),
         headers: {
-          'Authorization': 'Bearer $token',
           'Accept': 'application/json',
+          'Content-Type': 'application/json',
         },
       );
 
+      // Clear preferences setelah response diterima
       await prefs.clear();
 
+      if (!mounted) return;
+
+      setState(() {
+        _isLoading = false;
+      });
+
       if (response.statusCode == 200) {
-        if (!mounted) return;
-        Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+        // Tampilkan dialog dan tunggu sampai selesai
+        await _showSuccessDialog(context, 'Berhasil logout');
       } else {
-        throw Exception('Failed to logout');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Gagal logout')),
+        );
+        _navigateToLogin();
       }
     } catch (e) {
+      print('Error logging out: $e');
       if (!mounted) return;
-      // Still clear preferences and navigate to login even if API call fails
-      Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      setState(() {
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${e.toString()}')),
+      );
+      _navigateToLogin();
     }
   }
 
   void _confirmLogout(BuildContext context) {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: const Color(0xFFEAD8B0),
-          title: const Text("KONFIRMASI"),
-          content: const Text("Apakah ingin keluar dari akun?"),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              style: TextButton.styleFrom(
-                foregroundColor: const Color(0xFF001f3f),
-                backgroundColor: const Color(0xFF6A9AB0),
-              ),
-              child: const Text('Tidak'),
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) => AlertDialog(
+        backgroundColor: const Color(0xFFEAD8B0),
+        title: const Text("KONFIRMASI"),
+        content: const Text("Apakah ingin keluar dari akun?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFF001f3f),
+              backgroundColor: const Color(0xFF6A9AB0),
             ),
-            TextButton(
-              onPressed: _isLoading ? null : () {
-                Navigator.of(context).pop();
-                _logout(context);
-              },
-              style: TextButton.styleFrom(
-                foregroundColor: const Color(0xFF001f3f),
-                backgroundColor: const Color(0xFF6A9AB0),
-              ),
-              child: const Text('Ya'),
+            child: const Text('Tidak'),
+          ),
+          TextButton(
+            onPressed: _isLoading ? null : () {
+              Navigator.of(dialogContext).pop();
+              _logout(context);
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: const Color(0xFF001f3f),
+              backgroundColor: const Color(0xFF6A9AB0),
             ),
-          ],
-        );
-      },
+            child: const Text('Ya'),
+          ),
+        ],
+      ),
     );
   }
 

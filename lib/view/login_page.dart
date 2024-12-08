@@ -22,6 +22,27 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
+    void _showMessage(BuildContext context, bool isSuccess, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+          ),
+        ),
+        backgroundColor: isSuccess ? Colors.green : Colors.red,
+        duration: const Duration(seconds: 3),
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
+    );
+  }
+
   Future<void> _loginUser() async {
     final url = Uri.parse('http://192.168.237.62:8000/api/login');
 
@@ -47,7 +68,7 @@ class _LoginPageState extends State<LoginPage> {
 
         if (responseData['status'] == 'success') {
           // Ambil data pengguna
-          final userData = responseData['data']['user']; // Sesuaikan dengan struktur respons API
+          final userData = responseData['data']['user'];
           print('User Data: $userData');
 
           // Simpan ID pengguna ke SharedPreferences
@@ -57,8 +78,12 @@ class _LoginPageState extends State<LoginPage> {
 
           print('User data berhasil disimpan di SharedPreferences.');
 
-          // Navigasi ke HomeView setelah login berhasil
           if (!mounted) return;
+          
+          // Tampilkan pesan sukses
+          _showMessage(context, true, 'Login berhasil!');
+
+          // Navigasi ke HomeView setelah login berhasil
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (_) => const HomePage()),
@@ -66,15 +91,18 @@ class _LoginPageState extends State<LoginPage> {
         } else {
           // Tampilkan pesan error dari API
           final errorMessage = responseData['message'] ?? 'Username atau password salah';
+          _showMessage(context, false, errorMessage);
           showAlertDialog(context, 'Login Gagal', errorMessage);
         }
       } else {
         // Tampilkan pesan error untuk respons dengan status kode selain 200
+        _showMessage(context, false, 'Terjadi kesalahan saat login');
         showAlertDialog(context, 'Login Gagal', 'Terjadi kesalahan saat login. Status Code: ${response.statusCode}');
       }
     } catch (e) {
       // Tangani error saat mencoba terhubung ke server
       print('Error saat login: $e');
+      _showMessage(context, false, 'Tidak dapat terhubung ke server');
       showAlertDialog(context, 'Error', 'Tidak dapat terhubung ke server. Periksa koneksi Anda.');
     }
   }
