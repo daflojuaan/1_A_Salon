@@ -16,6 +16,9 @@ class EditProfilePage extends StatefulWidget {
 }
 
 class _EditProfilePageState extends State<EditProfilePage> {
+  final String ip = "10.0.2.2"; //kalo mau ganti ip dari sini aja 
+
+
   late TextEditingController _usernameController;
   late TextEditingController _emailController;
   late TextEditingController _phoneController;
@@ -62,7 +65,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       })}');
 
       final response = await http.put(
-        Uri.parse('http://192.168.237.62:8000/api/profile/update/$userId'),
+        Uri.parse('http://$ip:8000/api/profile/update/$userId'),
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
