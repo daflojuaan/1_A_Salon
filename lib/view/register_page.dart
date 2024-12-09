@@ -53,7 +53,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
       if (!mounted) return;
 
-      if (response.statusCode == 201) {
+      if (response.statusCode == 200) {
           _showMessage('Register Success', isError: false);
           Navigator.pop(context);
       } else {

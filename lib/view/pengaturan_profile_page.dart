@@ -17,6 +17,7 @@ class PengaturanProfilePage extends StatefulWidget {
 }
 
 class _PengaturanProfilePageState extends State<PengaturanProfilePage> {
+  final String ip = "10.0.0.2";
   bool _isLoading = false;
 
   void _navigateToLogin() {
@@ -63,7 +64,8 @@ class _PengaturanProfilePageState extends State<PengaturanProfilePage> {
     );
   }
 
-  Future<bool> _handlePasswordChange(String oldPassword, String newPassword) async {
+  Future<bool> _handlePasswordChange(
+      String oldPassword, String newPassword) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final userId = prefs.getInt('userId');
@@ -73,7 +75,7 @@ class _PengaturanProfilePageState extends State<PengaturanProfilePage> {
       }
 
       final response = await http.put(
-        Uri.parse('http://192.168.237.62:8000/api/profile/password/$userId'),
+        Uri.parse('http://$ip/api/profile/password/$userId'),
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
@@ -90,7 +92,7 @@ class _PengaturanProfilePageState extends State<PengaturanProfilePage> {
 
       if (response.statusCode == 200) {
         if (!mounted) return false;
-        
+
         // Show success dialog
         await showDialog(
           context: context,
@@ -116,7 +118,7 @@ class _PengaturanProfilePageState extends State<PengaturanProfilePage> {
             ],
           ),
         );
-        
+
         return true;
       } else {
         final errorData = json.decode(response.body);
@@ -125,7 +127,7 @@ class _PengaturanProfilePageState extends State<PengaturanProfilePage> {
     } catch (e) {
       print('Error changing password: $e');
       if (!mounted) return false;
-      
+
       // Show error message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -133,7 +135,7 @@ class _PengaturanProfilePageState extends State<PengaturanProfilePage> {
           backgroundColor: Colors.red,
         ),
       );
-      
+
       return false;
     }
   }
@@ -152,7 +154,7 @@ class _PengaturanProfilePageState extends State<PengaturanProfilePage> {
       }
 
       final response = await http.delete(
-        Uri.parse('http://192.168.237.62:8000/api/profile/delete/$userId'),
+        Uri.parse('http://10.0.2.2:8000/api/profile/delete/$userId'),
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
@@ -208,10 +210,12 @@ class _PengaturanProfilePageState extends State<PengaturanProfilePage> {
             child: const Text('Batal'),
           ),
           TextButton(
-            onPressed: _isLoading ? null : () {
-              Navigator.of(dialogContext).pop();
-              _deleteAccount(context);
-            },
+            onPressed: _isLoading
+                ? null
+                : () {
+                    Navigator.of(dialogContext).pop();
+                    _deleteAccount(context);
+                  },
             style: TextButton.styleFrom(
               foregroundColor: const Color(0xFF001f3f),
               backgroundColor: const Color(0xFF6A9AB0),
@@ -223,7 +227,7 @@ class _PengaturanProfilePageState extends State<PengaturanProfilePage> {
     );
   }
 
-    Future<void> _logout(BuildContext context) async {
+  Future<void> _logout(BuildContext context) async {
     try {
       setState(() {
         _isLoading = true;
@@ -293,10 +297,12 @@ class _PengaturanProfilePageState extends State<PengaturanProfilePage> {
             child: const Text('Tidak'),
           ),
           TextButton(
-            onPressed: _isLoading ? null : () {
-              Navigator.of(dialogContext).pop();
-              _logout(context);
-            },
+            onPressed: _isLoading
+                ? null
+                : () {
+                    Navigator.of(dialogContext).pop();
+                    _logout(context);
+                  },
             style: TextButton.styleFrom(
               foregroundColor: const Color(0xFF001f3f),
               backgroundColor: const Color(0xFF6A9AB0),
@@ -329,7 +335,9 @@ class _PengaturanProfilePageState extends State<PengaturanProfilePage> {
             child: Column(
               children: [
                 InkWell(
-                  onTap: _isLoading ? null : () => _navigateToChangePassword(context),
+                  onTap: _isLoading
+                      ? null
+                      : () => _navigateToChangePassword(context),
                   child: Container(
                     padding: const EdgeInsets.all(16.0),
                     margin: const EdgeInsets.symmetric(vertical: 8.0),
@@ -350,7 +358,8 @@ class _PengaturanProfilePageState extends State<PengaturanProfilePage> {
                   ),
                 ),
                 InkWell(
-                  onTap: _isLoading ? null : () => _confirmDeleteAccount(context),
+                  onTap:
+                      _isLoading ? null : () => _confirmDeleteAccount(context),
                   child: Container(
                     padding: const EdgeInsets.all(16.0),
                     margin: const EdgeInsets.symmetric(vertical: 8.0),
