@@ -26,19 +26,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    _loadSavedImageUrl();
     _loadUserData();
   }
 
-  Future<void> _loadSavedImageUrl() async {
-    final prefs = await SharedPreferences.getInstance();
-    final savedUrl = prefs.getString('profile_image_url');
-    if (savedUrl != null && mounted) {
-      setState(() {
-        _savedImageUrl = savedUrl;
-      });
-    }
-  }
+  // Future<void> _loadSavedImageUrl() async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   final savedUrl = prefs.getString('profile_image_url');
+  //   if (savedUrl != null && mounted) {
+  //     setState(() {
+  //       _savedImageUrl = savedUrl;
+  //     });
+  //   }
+  // }
 
   Future<void> _loadUserData() async {
     try {
@@ -66,7 +65,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             // Update foto profile jika ada
             if (data['data']['user']['photo'] != null) {
               _savedImageUrl = data['data']['user']['photo'];
-              prefs.setString('profile_image_url', _savedImageUrl!);
+              // prefs.setString('profile_image_url', _savedImageUrl!);
             }
             _isLoading = false;
           });
@@ -121,7 +120,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             if (responseData['data'] != null &&
                 responseData['data']['photo'] != null) {
               _savedImageUrl = responseData['data']['photo'];
-              prefs.setString('profile_image_url', _savedImageUrl!);
+              // prefs.setString('profile_image_url', _savedImageUrl!);
             }
           });
         }
