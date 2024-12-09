@@ -23,7 +23,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-assets:
+  assets:
     - lib/asset/reservasi.png
     - lib/asset/reservasiAktif.png
     - lib/asset/layanan.jpg
