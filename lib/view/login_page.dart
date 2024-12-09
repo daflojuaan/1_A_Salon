@@ -22,7 +22,7 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-    void _showMessage(BuildContext context, bool isSuccess, String message) {
+  void _showMessage(BuildContext context, bool isSuccess, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -44,7 +44,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _loginUser() async {
-    final url = Uri.parse('http://192.168.237.62:8000/api/login');
+    final url = Uri.parse('http://10.0.2.2:8000/api/login');
 
     try {
       // Kirim permintaan login ke API
@@ -79,7 +79,7 @@ class _LoginPageState extends State<LoginPage> {
           print('User data berhasil disimpan di SharedPreferences.');
 
           if (!mounted) return;
-          
+
           // Tampilkan pesan sukses
           _showMessage(context, true, 'Login berhasil!');
 
@@ -90,20 +90,23 @@ class _LoginPageState extends State<LoginPage> {
           );
         } else {
           // Tampilkan pesan error dari API
-          final errorMessage = responseData['message'] ?? 'Username atau password salah';
+          final errorMessage =
+              responseData['message'] ?? 'Username atau password salah';
           _showMessage(context, false, errorMessage);
           showAlertDialog(context, 'Login Gagal', errorMessage);
         }
       } else {
         // Tampilkan pesan error untuk respons dengan status kode selain 200
         _showMessage(context, false, 'Terjadi kesalahan saat login');
-        showAlertDialog(context, 'Login Gagal', 'Terjadi kesalahan saat login. Status Code: ${response.statusCode}');
+        showAlertDialog(context, 'Login Gagal',
+            'Terjadi kesalahan saat login. Status Code: ${response.statusCode}');
       }
     } catch (e) {
       // Tangani error saat mencoba terhubung ke server
       print('Error saat login: $e');
       _showMessage(context, false, 'Tidak dapat terhubung ke server');
-      showAlertDialog(context, 'Error', 'Tidak dapat terhubung ke server. Periksa koneksi Anda.');
+      showAlertDialog(context, 'Error',
+          'Tidak dapat terhubung ke server. Periksa koneksi Anda.');
     }
   }
 

@@ -2,6 +2,9 @@ import 'package:a_salon/view/scan_page.dart';
 import 'package:a_salon/view/profile_page.dart';
 import 'package:flutter/material.dart';
 import 'package:a_salon/view/notification_page.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -13,10 +16,16 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
   bool isSaldoVisible = false;
+  bool _isLoading = true;
+
+  Map<String, dynamic> userData = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
   
-  Map<String, dynamic> userData = {
-    'username': 'Guest',
-  };
 
   void _onItemTapped(int index) {
     setState(() {
@@ -25,13 +34,60 @@ class _HomePageState extends State<HomePage> {
   }
 
   List<Widget> get _pages => [
-    _buildHomePage(context),
-    const ScanPage(),
-    const ProfileScreen(), // Assuming you have a normal ProfilePage without user parameter
-  ];
+        _buildHomePage(context),
+        const ScanPage(),
+        const ProfileScreen(), // Assuming you have a normal ProfilePage without user parameter
+      ];
+
+  Future<void> _loadUserData() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final id = prefs.getInt('userId');
+
+      print('Loading data for user ID: $id');
+
+      if (id == null) {
+        throw Exception('User ID not found. Please log in.');
+      }
+
+      final response = await http.get(
+        Uri.parse('http://10.0.2.2:8000/api/profile/$id'),
+        headers: {'Accept': 'application/json'},
+      );
+
+      print('Profile load response: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (mounted) {
+          setState(() {
+            userData = data['data'];
+            _isLoading = false;
+          });
+        }
+      } else {
+        throw Exception(
+            'Failed to load user data. Status: ${response.statusCode}');
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: ${e.toString()}')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -87,7 +143,16 @@ class _HomePageState extends State<HomePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'SELAMAT DATANG, ${userData['username']?.toUpperCase() ?? 'GUEST'}',
+              'SELAMAT DATANG,',
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF1B3358),
+                letterSpacing: 0.5,
+              ),
+            ),
+            Text(
+              userData['user']['username'] ?? 'GUEST',
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w800,
