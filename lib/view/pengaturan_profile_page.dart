@@ -236,6 +236,9 @@ class _PengaturanProfilePageState extends State<PengaturanProfilePage> {
       final prefs = await SharedPreferences.getInstance();
       final userId = prefs.getInt('userId');
 
+      
+      await prefs.remove('profile_image_url');
+
       if (userId == null) {
         throw Exception('User not logged in');
       }

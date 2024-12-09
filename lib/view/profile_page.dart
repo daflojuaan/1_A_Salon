@@ -19,13 +19,25 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   Map<String, dynamic> userData = {};
   File? _profileImage;
+  String? _savedImageUrl;
   final ImagePicker _picker = ImagePicker();
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
+    _loadSavedImageUrl();
     _loadUserData();
+  }
+
+  Future<void> _loadSavedImageUrl() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedUrl = prefs.getString('profile_image_url');
+    if (savedUrl != null && mounted) {
+      setState(() {
+        _savedImageUrl = savedUrl;
+      });
+    }
   }
 
   Future<void> _loadUserData() async {
@@ -51,6 +63,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
         if (mounted) {
           setState(() {
             userData = data['data'];
+            // Update foto profile jika ada
+            if (data['data']['user']['photo'] != null) {
+              _savedImageUrl = data['data']['user']['photo'];
+              prefs.setString('profile_image_url', _savedImageUrl!);
+            }
             _isLoading = false;
           });
         }
@@ -73,43 +90,47 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final prefs = await SharedPreferences.getInstance();
       final userId = prefs.getInt('userId');
 
-      if (userId == null) {
-        throw Exception('User not logged in');
-      }
+      print('Uploading image for user ID: $userId'); // Debug print
+      print('Image path: ${image.path}'); // Debug print
 
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse('http://10.0.2.2:8000/api/profile/image/$userId'),
+        Uri.parse('http://192.168.237.62:8000/api/profile/photo/$userId'),
+
       );
 
       request.headers.addAll({
         'Accept': 'application/json',
+        'Content-Type': 'multipart/form-data',
       });
 
-      request.files.add(
-        await http.MultipartFile.fromPath('image', image.path),
-      );
+      var photoFile = await http.MultipartFile.fromPath('photo', image.path);
+      print('File size: ${photoFile.length} bytes'); // Debug print
+      request.files.add(photoFile);
 
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
 
-      print('Image upload response: ${response.body}');
+      print('Response status code: ${response.statusCode}'); // Debug print
+      print('Response body: ${response.body}'); // Debug print
 
       if (response.statusCode == 200) {
         final responseData = json.decode(response.body);
         if (mounted) {
           setState(() {
-            userData['profile_image_url'] =
-                responseData['data']['profile_image_url'];
+            _profileImage = image;
+            if (responseData['data'] != null &&
+                responseData['data']['photo'] != null) {
+              _savedImageUrl = responseData['data']['photo'];
+              prefs.setString('profile_image_url', _savedImageUrl!);
+            }
           });
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Profile image updated successfully')),
-          );
         }
       } else {
-        throw Exception('Failed to upload image');
+        throw Exception('Upload failed with status: ${response.statusCode}');
       }
     } catch (e) {
+      print('Error uploading: $e'); // Debug print
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error uploading image: $e')),
@@ -232,10 +253,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           radius: 60,
                           backgroundImage: _profileImage != null
                               ? FileImage(_profileImage!)
-                              : null,
-                          child: _profileImage == null
-                              ? const Icon(Icons.person,
-                                  size: 50, color: Colors.white)
+                              : (_savedImageUrl != null && _savedImageUrl!.isNotEmpty
+                                  ? NetworkImage(_savedImageUrl!)
+                                  : null) as ImageProvider?,
+                          child: (_profileImage == null && 
+                                  (_savedImageUrl == null || _savedImageUrl!.isEmpty))
+                              ? const Icon(Icons.person, size: 50, color: Colors.white)
                               : null,
                           backgroundColor: const Color(0xFF001F3F),
                         ),
