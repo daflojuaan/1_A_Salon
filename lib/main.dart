@@ -29,22 +29,21 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: ReservasiView(),
-      // initialRoute: '/', // Menentukan halaman pertama yang akan muncul
-      // routes: {
-      //   '/': (context) => const LoginPage(), // Halaman pertama (LoginPage)
-      //   '/register': (context) => const RegisterPage(),
-      //   // '/forgot-password': (context) => const ForgotPasswordPage(),
-      //   '/login': (context) => const LoginPage(),
-      //   '/scan': (context) => const ScanPage(),
-      //   '/reservation': (context) => ListReservasiPage(),
-      //   '/payment': (context) => const PaymentPage(),
-      //   '/topup': (context) => const TopUpSaldoPage(), // Halaman TopUpSaldoPage
-      //   '/barber': (context) => const BarberProfilePage(),
-      //   '/notification': (context) => const NotificationPage(),
-      //   '/caraPembayaran': (context) =>
-      //       const CaraPembayaranPage(amount: 0, paymentMethod: 'Bank Transfer'),
-      // },
+      initialRoute: '/', // Menentukan halaman pertama yang akan muncul
+      routes: {
+        '/': (context) => const LoginPage(), // Halaman pertama (LoginPage)
+        '/register': (context) => const RegisterPage(),
+        // '/forgot-password': (context) => const ForgotPasswordPage(),
+        '/login': (context) => const LoginPage(),
+        '/scan': (context) => const ScanPage(),
+        '/reservation': (context) => ReservasiView(),
+        '/payment': (context) => const PaymentPage(),
+        '/topup': (context) => const TopUpSaldoPage(), // Halaman TopUpSaldoPage
+        '/barber': (context) => const BarberProfilePage(),
+        '/notification': (context) => const NotificationPage(),
+        '/caraPembayaran': (context) =>
+            const CaraPembayaranPage(amount: 0, paymentMethod: 'Bank Transfer'),
+      },
     );
   }
 }
