@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'package:a_salon/view/login_page.dart';
 import 'package:a_salon/view/register_page.dart';
 // import 'package:a_salon/view/forgot_password_page.dart';
@@ -10,6 +11,7 @@ import 'package:a_salon/view/notification_page.dart';
 import 'package:a_salon/view/caraPembayaranPage.dart';
 import 'package:a_salon/view/topup_saldo.dart'; // Pastikan sudah mengimpor TopUpSaldoPage
 
+
 void main() {
   runApp(const MyApp());
 }
@@ -18,6 +20,7 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
+
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'A Salon Ulang',
@@ -39,6 +42,7 @@ class MyApp extends StatelessWidget {
         '/notification': (context) => const NotificationPage(),
         '/caraPembayaran': (context) =>
             const CaraPembayaranPage(amount: 0, paymentMethod: 'Bank Transfer'),
+
       },
     );
   }
