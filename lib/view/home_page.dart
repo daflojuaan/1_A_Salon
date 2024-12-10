@@ -64,7 +64,7 @@ class _HomePageState extends State<HomePage> {
       print('Fetching saldo for user ID: $id'); // Debug print
 
       final response = await http.get(
-        Uri.parse('http://10.0.2.2:8000/api/profile/$id'),
+        Uri.parse('http://192.168.0.62:8000/api/profile/$id'),
         headers: {'Accept': 'application/json'},
       );
 
@@ -103,7 +103,7 @@ class _HomePageState extends State<HomePage> {
       }
 
       final response = await http.get(
-        Uri.parse('http://10.0.2.2:8000/api/profile/$id'),
+        Uri.parse('http://192.168.0.62:8000/api/profile/$id'),
         headers: {'Accept': 'application/json'},
       );
 

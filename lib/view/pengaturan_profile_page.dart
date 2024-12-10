@@ -75,7 +75,7 @@ class _PengaturanProfilePageState extends State<PengaturanProfilePage> {
       }
 
       final response = await http.put(
-        Uri.parse('http://$ip/api/profile/password/$userId'),
+        Uri.parse('http://192.168.0.62:8000/api/profile/password/$userId'),
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
@@ -236,7 +236,6 @@ class _PengaturanProfilePageState extends State<PengaturanProfilePage> {
       final prefs = await SharedPreferences.getInstance();
       final userId = prefs.getInt('userId');
 
-      
       await prefs.remove('profile_image_url');
 
       if (userId == null) {

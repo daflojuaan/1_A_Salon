@@ -21,7 +21,7 @@ class ReservasiClient {
       final prefs = await SharedPreferences.getInstance();
       final id = await prefs.getInt('userId');
       var response =
-          await get(Uri.parse('http://10.0.2.2:8000/api/reservations/active/$id'));
+          await get(Uri.parse('http://192.168.0.62:8000/api/reservations/active/$id'));
       print(response.body);
       if (response.statusCode != 200) throw Exception(response.reasonPhrase);
       print(response.body);
