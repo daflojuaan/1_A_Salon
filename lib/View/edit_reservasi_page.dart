@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:a_salon/database/database_helper_reservation.dart';
+import 'package:a_salon/entity/Reservasi.dart';
+import 'package:a_salon/client/ReservasiClient.dart'; // Import the ReservasiClient
 
 class EditReservationScreen extends StatefulWidget {
-  final Map<String, dynamic> reservation;
+  final Reservasi reservasi;
 
-  EditReservationScreen({required this.reservation});
+  EditReservationScreen({required this.reservasi});
 
   @override
   _EditReservationScreenState createState() => _EditReservationScreenState();
@@ -15,8 +16,6 @@ class _EditReservationScreenState extends State<EditReservationScreen> {
   String? selectedBarber;
   String? selectedService;
   String? selectedTime;
-
-  final DatabaseHelperReservasi _dbHelper = DatabaseHelperReservasi.instance;
 
   final List<String> barbers = ['Dewa', 'Ardha', 'Hazel', 'Daflo'];
   final List<String> jamTersedia = [
@@ -54,10 +53,11 @@ class _EditReservationScreenState extends State<EditReservationScreen> {
     'Kids Cut',
   ];
 
+  // Fungsi untuk memilih tanggal
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
+      initialDate: selectedDate ?? DateTime.now(),
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 30)),
     );
@@ -68,15 +68,7 @@ class _EditReservationScreenState extends State<EditReservationScreen> {
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
-    selectedDate = _parseDate(widget.reservation['date']);
-    selectedBarber = widget.reservation['barber'];
-    selectedService = widget.reservation['service'];
-    selectedTime = widget.reservation['time'];
-  }
-
+  // Fungsi untuk mengonversi string tanggal menjadi DateTime
   DateTime? _parseDate(String dateStr) {
     final parts = dateStr.split('/');
     if (parts.length == 3) {
@@ -90,10 +82,21 @@ class _EditReservationScreenState extends State<EditReservationScreen> {
     return null;
   }
 
-  String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year}';
+  // Fungsi untuk memformat tanggal menjadi string yang lebih mudah dibaca
+String _formatDate(DateTime date) {
+  // Convert DateTime to the format 'YYYY-MM-DD' for MySQL compatibility
+  return '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+}
+
+
+  // Fungsi untuk memvalidasi waktu yang dipilih
+  String? _validateTime(String time) {
+    // Format waktu untuk mencocokkan waktu yang tersedia
+    String formattedTime = time.length > 5 ? time.substring(0, 5) : time;
+    return jamTersedia.contains(formattedTime) ? formattedTime : null;
   }
 
+  // Mendapatkan layanan berdasarkan barber yang dipilih
   List<String> _getAvailableServices() {
     if (selectedBarber == 'Dewa') {
       return layananDewa;
@@ -107,6 +110,7 @@ class _EditReservationScreenState extends State<EditReservationScreen> {
     return [];
   }
 
+  // Fungsi untuk memperbarui reservasi
   Future<void> _updateReservation() async {
     if (selectedDate != null &&
         selectedService != null &&
@@ -114,32 +118,50 @@ class _EditReservationScreenState extends State<EditReservationScreen> {
         selectedTime != null) {
       String formattedDate = _formatDate(selectedDate!);
 
-      // Create a mutable copy of the reservation data
-      final updatedReservation = Map<String, dynamic>.from(widget.reservation);
-      updatedReservation['date'] = formattedDate;
-      updatedReservation['time'] = selectedTime!;
-      updatedReservation['barber'] = selectedBarber!;
-      updatedReservation['service'] = selectedService!;
-      updatedReservation['status'] =
-          'Booked'; // Ensure status is updated if necessary
+      final updatedReservation = Reservasi(
+        id: widget.reservasi.id,
+        date: formattedDate,
+        time: selectedTime!,
+        barber: selectedBarber!,
+        service: selectedService!,
+        status: 'Booked',
+      );
 
-      int result = await _dbHelper.updateReservation(updatedReservation);
-      if (result > 0) {
+      try {
+        final response = await ReservasiClient.update(updatedReservation);
+
+        if (response.statusCode == 200) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Reservasi berhasil diperbarui')),
+          );
+          Navigator.pop(context, updatedReservation);
+        } else {
+          print('Server response: ${response.body}'); // Debug respons server
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Gagal memperbarui reservasi: ${response.statusCode}')),
+          );
+        }
+      } catch (e) {
+        print('Error: $e'); // Debug error
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Reservasi berhasil diperbarui')),
-        );
-        // Pass the updated reservation back to the previous screen
-        Navigator.pop(context, updatedReservation);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Gagal memperbarui reservasi')),
+          SnackBar(content: Text('Terjadi kesalahan: $e')),
         );
       }
-    } else { 
+    } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Mohon lengkapi semua data')),
       );
     }
+  }
+
+  // Inisialisasi data saat layar dibuka
+  @override
+  void initState() {
+    super.initState();
+    selectedDate = _parseDate(widget.reservasi.date);
+    selectedBarber = widget.reservasi.barber;
+    selectedService = widget.reservasi.service;
+    selectedTime = _validateTime(widget.reservasi.time);
   }
 
   @override
@@ -152,6 +174,7 @@ class _EditReservationScreenState extends State<EditReservationScreen> {
     );
   }
 
+  // Formulir untuk mengedit reservasi
   Widget _buildForm() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16.0),
@@ -197,10 +220,7 @@ class _EditReservationScreenState extends State<EditReservationScreen> {
             ),
             hint: const Text('Pilih Barber'),
             items: barbers.map((String value) {
-              return DropdownMenuItem<String>(
-                value: value,
-                child: Text(value),
-              );
+              return DropdownMenuItem<String>(value: value, child: Text(value));
             }).toList(),
             onChanged: (newValue) {
               setState(() {
@@ -222,10 +242,7 @@ class _EditReservationScreenState extends State<EditReservationScreen> {
               ),
               hint: const Text('Pilih Layanan'),
               items: _getAvailableServices().map((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
+                return DropdownMenuItem<String>(value: value, child: Text(value));
               }).toList(),
               onChanged: (newValue) {
                 setState(() {
@@ -246,10 +263,7 @@ class _EditReservationScreenState extends State<EditReservationScreen> {
             ),
             hint: const Text('Pilih Jam'),
             items: jamTersedia.map((String value) {
-              return DropdownMenuItem<String>(
-                value: value,
-                child: Text(value),
-              );
+              return DropdownMenuItem<String>(value: value, child: Text(value));
             }).toList(),
             onChanged: (newValue) {
               setState(() {
