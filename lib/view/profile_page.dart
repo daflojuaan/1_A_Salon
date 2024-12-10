@@ -373,21 +373,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         final result = await Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => CreatePinPage(
+                            builder: (context) => PinPage(
+                              isUpdate: userData['user']['has_pin'] ?? false,
                               userData: userData['user'],
                             ),
                           ),
                         );
-
                         if (result == true) {
-                          // Refresh profile data jika PIN berhasil dibuat
-                          await _loadUserData();
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text('PIN berhasil diperbarui')),
-                            );
-                          }
+                          await _loadUserData(); // Refresh user data
                         }
                       },
                       style: ElevatedButton.styleFrom(
@@ -395,8 +388,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 15),
                       ),
-                      child: const Text('Buat PIN',
-                          style: TextStyle(fontSize: 16)),
+                      child: Text(
+                        userData['user']['has_pin'] ?? false ? 'Ubah PIN' : 'Buat PIN',
+                        style: const TextStyle(fontSize: 16)
+                      ),
                     ),
                   ),
                 ],

@@ -1,29 +1,32 @@
-// create_pin_page.dart
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class CreatePinPage extends StatefulWidget {
+class PinPage extends StatefulWidget {
+  final bool isUpdate;
   final Map<String, dynamic> userData;
 
-  const CreatePinPage({super.key, required this.userData});
+  const PinPage({
+    Key? key, 
+    required this.isUpdate,
+    required this.userData,
+  }) : super(key: key);
 
   @override
-  _CreatePinPageState createState() => _CreatePinPageState();
+  _PinPageState createState() => _PinPageState();
 }
 
-class _CreatePinPageState extends State<CreatePinPage> {
+class _PinPageState extends State<PinPage> {
+  final TextEditingController _currentPinController = TextEditingController();
   final TextEditingController _pinController = TextEditingController();
   final TextEditingController _confirmPinController = TextEditingController();
   bool _isPinVisible = false;
   String _errorMessage = '';
-  bool _isLoading = false;
 
-  Future<void> _createPin() async {
+  Future<void> _handlePin() async {
     setState(() {
       _errorMessage = '';
-      _isLoading = true;
     });
 
     String pin = _pinController.text;
@@ -32,7 +35,6 @@ class _CreatePinPageState extends State<CreatePinPage> {
     if (pin.length != 6) {
       setState(() {
         _errorMessage = 'PIN harus terdiri dari 6 digit';
-        _isLoading = false;
       });
       return;
     }
@@ -40,51 +42,75 @@ class _CreatePinPageState extends State<CreatePinPage> {
     if (pin != confirmPin) {
       setState(() {
         _errorMessage = 'PIN tidak cocok';
-        _isLoading = false;
       });
       return;
     }
 
     try {
       final prefs = await SharedPreferences.getInstance();
-      final userId = widget.userData['id'];
+      final userId = prefs.getInt('userId');
+      
+      if (userId == null) {
+        throw Exception('User ID not found');
+      }
+
+      // Print data untuk debugging
+      print('Request data:');
+      print(widget.isUpdate ? 'current_pin: ${_currentPinController.text}' : '');
+      print('pin: $pin');
+      print('confirm_pin: $confirmPin');
+
+      final url = widget.isUpdate 
+        ? 'http://192.168.0.62:8000/api/profile/pin/update/$userId'
+        : 'http://192.168.0.62:8000/api/profile/pin/create/$userId';
+
+      // Persiapkan body request sesuai dengan jenis operasi
+      final Map<String, String> requestBody = widget.isUpdate 
+        ? {
+            'current_pin': _currentPinController.text,
+            'new_pin': pin,
+            'confirm_pin': confirmPin,
+          }
+        : {
+            'pin': pin,
+            'confirm_pin': confirmPin,
+          };
+
+      // Print request untuk debugging
+      print('URL: $url');
+      print('Request body: $requestBody');
 
       final response = await http.post(
-        Uri.parse('http://http://192.168.0.62:8000/api/create-pin/$userId'),
+        Uri.parse(url),
         headers: {
-          'Accept': 'application/json',
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
-        body: json.encode({
-          'pin': pin,
-        }),
+        body: jsonEncode(requestBody),
       );
 
-      if (!mounted) return;
+      // Print response untuk debugging
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
 
       if (response.statusCode == 200) {
-        // PIN berhasil dibuat
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('PIN berhasil dibuat')),
-        );
-        Navigator.pop(context, true);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(widget.isUpdate ? 'PIN berhasil diubah' : 'PIN berhasil dibuat')),
+          );
+          Navigator.pop(context, true);
+        }
       } else {
-        // Error membuat PIN
         final errorData = json.decode(response.body);
         setState(() {
-          _errorMessage = errorData['message'] ?? 'Gagal membuat PIN';
+          _errorMessage = errorData['message'] ?? 'Terjadi kesalahan';
         });
       }
     } catch (e) {
+      print('Error: $e'); // Debug print
       setState(() {
-        _errorMessage = 'Terjadi kesalahan: $e';
+        _errorMessage = e.toString();
       });
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
     }
   }
 
@@ -93,7 +119,7 @@ class _CreatePinPageState extends State<CreatePinPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Buat PIN'),
+        title: Text(widget.isUpdate ? 'Ubah PIN' : 'Buat PIN'),
         backgroundColor: const Color(0xFF001F3F),
       ),
       body: Padding(
@@ -101,9 +127,9 @@ class _CreatePinPageState extends State<CreatePinPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text(
-              'Buat PIN Baru',
-              style: TextStyle(
+            Text(
+              widget.isUpdate ? 'Ubah PIN' : 'Buat PIN Baru',
+              style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
                 color: Colors.black,
@@ -111,13 +137,34 @@ class _CreatePinPageState extends State<CreatePinPage> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),
+            if (widget.isUpdate) TextField(
+              controller: _currentPinController,
+              obscureText: !_isPinVisible,
+              keyboardType: TextInputType.number,
+              maxLength: 6,
+              decoration: InputDecoration(
+                labelText: 'PIN Saat Ini',
+                border: const OutlineInputBorder(),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _isPinVisible ? Icons.visibility : Icons.visibility_off,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _isPinVisible = !_isPinVisible;
+                    });
+                  },
+                ),
+              ),
+            ),
+            if (widget.isUpdate) const SizedBox(height: 10),
             TextField(
               controller: _pinController,
               obscureText: !_isPinVisible,
               keyboardType: TextInputType.number,
               maxLength: 6,
               decoration: InputDecoration(
-                labelText: 'Masukkan PIN (6 digit)',
+                labelText: widget.isUpdate ? 'PIN Baru' : 'Masukkan PIN (6 digit)',
                 border: const OutlineInputBorder(),
                 suffixIcon: IconButton(
                   icon: Icon(
@@ -138,7 +185,7 @@ class _CreatePinPageState extends State<CreatePinPage> {
               keyboardType: TextInputType.number,
               maxLength: 6,
               decoration: InputDecoration(
-                labelText: 'Konfirmasi PIN',
+                labelText: widget.isUpdate ? 'Konfirmasi PIN Baru' : 'Konfirmasi PIN',
                 border: const OutlineInputBorder(),
                 suffixIcon: IconButton(
                   icon: Icon(
@@ -161,15 +208,16 @@ class _CreatePinPageState extends State<CreatePinPage> {
               ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: _isLoading ? null : _createPin,
+              onPressed: _handlePin,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF6A9AB0),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 15),
               ),
-              child: _isLoading
-                  ? const CircularProgressIndicator(color: Colors.white)
-                  : const Text('Buat PIN', style: TextStyle(fontSize: 16)),
+              child: Text(
+                widget.isUpdate ? 'Ubah PIN' : 'Buat PIN',
+                style: const TextStyle(fontSize: 16)
+              ),
             ),
           ],
         ),
@@ -179,6 +227,7 @@ class _CreatePinPageState extends State<CreatePinPage> {
 
   @override
   void dispose() {
+    _currentPinController.dispose();
     _pinController.dispose();
     _confirmPinController.dispose();
     super.dispose();

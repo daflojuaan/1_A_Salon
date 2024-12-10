@@ -23,21 +23,21 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _getSaldo(); 
+    _getSaldo();
     _loadUserData();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-    if (mounted) {
-      _loadUserData();
-      _getSaldo(); 
-    }
+      if (mounted) {
+        _loadUserData();
+        _getSaldo();
+      }
     });
   }
 
   Future<void> refreshData() async {
-  if (mounted) {
-    await _loadUserData();
-    await _getSaldo(); 
-  }
+    if (mounted) {
+      await _loadUserData();
+      await _getSaldo();
+    }
   }
 
   void _onItemTapped(int index) {
@@ -51,47 +51,47 @@ class _HomePageState extends State<HomePage> {
         const ScanPage(),
         const ProfileScreen(), // Assuming you have a normal ProfilePage without user parameter
       ];
-  
+
   Future<void> _getSaldo() async {
-  try {
-    final prefs = await SharedPreferences.getInstance();
-    final id = prefs.getInt('userId');
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final id = prefs.getInt('userId');
 
-    if (id == null) {
-      throw Exception('User ID not found');
-    }
-
-    print('Fetching saldo for user ID: $id'); // Debug print
-
-    final response = await http.get(
-      Uri.parse('http://192.168.0.62:8000/api/profile/$id'),
-      headers: {'Accept': 'application/json'},
-    );
-
-    print('Saldo Response: ${response.body}'); // Debug print
-
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      if (mounted) {
-        setState(() {
-                    if (userData['user'] == null) {
-            userData['user'] = {};
-          }
-          userData['user']['saldo'] = data['data']['user']['saldo'];
-        });
+      if (id == null) {
+        throw Exception('User ID not found');
       }
-    } else {
-      throw Exception('Failed to load saldo');
-    }
-  } catch (e) {
-    print('Error getting saldo: $e'); // Debug print
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.toString()}')),
+
+      print('Fetching saldo for user ID: $id'); // Debug print
+
+      final response = await http.get(
+        Uri.parse('http://192.168.0.62:8000/api/profile/$id'),
+        headers: {'Accept': 'application/json'},
       );
+
+      print('Saldo Response: ${response.body}'); // Debug print
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (mounted) {
+          setState(() {
+            if (userData['user'] == null) {
+              userData['user'] = {};
+            }
+            userData['user']['saldo'] = data['data']['user']['saldo'];
+          });
+        }
+      } else {
+        throw Exception('Failed to load saldo');
+      }
+    } catch (e) {
+      print('Error getting saldo: $e'); // Debug print
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: ${e.toString()}')),
+        );
+      }
     }
   }
-}
 
   Future<void> _loadUserData() async {
     try {
@@ -116,7 +116,8 @@ class _HomePageState extends State<HomePage> {
           });
         }
       } else {
-        throw Exception('Failed to load user data. Status: ${response.statusCode}');
+        throw Exception(
+            'Failed to load user data. Status: ${response.statusCode}');
       }
     } catch (e) {
       if (mounted) {
@@ -232,8 +233,8 @@ class _HomePageState extends State<HomePage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        isSaldoVisible 
-                            ? 'Rp. ${(userData['user']?['saldo'] ?? 0).toString()}' 
+                        isSaldoVisible
+                            ? 'Rp. ${(userData['user']?['saldo'] ?? 0).toString()}'
                             : 'Rp. ***',
                         style: const TextStyle(
                           color: Colors.white,
@@ -281,25 +282,6 @@ class _HomePageState extends State<HomePage> {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: const [
-                      Text(
-                        'Point',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 14,
-                        ),
-                      ),
-                      Text(
-                        'Bonus',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
-                  ),
                 ],
               ),
             ),
