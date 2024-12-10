@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:a_salon/view/confirmPembayaran_page.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -10,7 +11,23 @@ class PinScreen extends StatefulWidget {
 }
 
 class _PinScreenState extends State<PinScreen> {
-  final List<String> _pin = [];
+  final TextEditingController _pinController = TextEditingController();
+  final FocusNode _pinFocusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(Duration.zero, () {
+      FocusScope.of(context).requestFocus(_pinFocusNode);
+    });
+  }
+
+  @override
+  void dispose() {
+    _pinController.dispose();
+    _pinFocusNode.dispose();
+    super.dispose();
+  }
 
   Future<void> _verifyPin() async {
     try {
@@ -28,7 +45,7 @@ class _PinScreenState extends State<PinScreen> {
           'Accept': 'application/json',
         },
         body: jsonEncode({
-          'pin': _pin.join(''),
+          'pin': _pinController.text,
         }),
       );
 
@@ -40,7 +57,6 @@ class _PinScreenState extends State<PinScreen> {
           );
         }
       } else {
-        // Show error modal
         if (mounted) {
           _showErrorModal();
         }
@@ -68,9 +84,8 @@ class _PinScreenState extends State<PinScreen> {
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
-                setState(() {
-                  _pin.clear();
-                });
+                _pinController.clear();
+                FocusScope.of(context).requestFocus(_pinFocusNode);
               },
               child: Text(
                 'Coba Lagi',
@@ -83,26 +98,6 @@ class _PinScreenState extends State<PinScreen> {
         );
       },
     );
-  }
-
-  void _onKeyPress(String value) {
-    if (_pin.length < 6) {
-      setState(() {
-        _pin.add(value);
-      });
-
-      if (_pin.length == 6) {
-        _verifyPin();
-      }
-    }
-  }
-
-  void _onBackspace() {
-    if (_pin.isNotEmpty) {
-      setState(() {
-        _pin.removeLast();
-      });
-    }
   }
 
   @override
@@ -146,86 +141,56 @@ class _PinScreenState extends State<PinScreen> {
             ),
             SizedBox(height: 10),
             Text(
-              'PIN',
+              'Masukkan PIN',
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
                 color: Color(0xFF001F3F),
               ),
             ),
             SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(6, (index) {
-                return Container(
-                  margin: EdgeInsets.symmetric(horizontal: 8),
-                  width: 16,
-                  height: 16,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: index < _pin.length ? Color(0xFF001F3F) : Colors.transparent,
-                    border: Border.all(color: Color(0xFF001F3F), width: 2),
+            Container(
+              width: 200,
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: Color(0xFF001F3F),
+                    width: 2.0,
                   ),
-                );
-              }),
-            ),
-            SizedBox(height: 40),
-            _buildNumberPad(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNumberPad() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        for (var i = 0; i < 3; i++)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: List.generate(3, (j) {
-              int num = i * 3 + j + 1;
-              return _buildNumberButton(num.toString());
-            }),
-          ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            SizedBox(width: 60),
-            _buildNumberButton('0'),
-            _buildNumberButton(Icons.backspace_outlined, isBackspace: true),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildNumberButton(dynamic content, {bool isBackspace = false}) {
-    return GestureDetector(
-      onTap: () {
-        if (isBackspace) {
-          _onBackspace();
-        } else if (content is String) {
-          _onKeyPress(content);
-        }
-      },
-      child: Container(
-        width: 60,
-        height: 60,
-        alignment: Alignment.center,
-        child: content is String
-            ? Text(
-                content,
+                ),
+              ),
+              child: TextField(
+                controller: _pinController,
+                focusNode: _pinFocusNode,
+                keyboardType: TextInputType.number,
+                obscureText: true,
+                maxLength: 6,
+                textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 24,
-                  color: Colors.black,
+                  letterSpacing: 8.0,
                 ),
-              )
-            : Icon(
-                content,
-                color: Colors.black,
-                size: 24,
+                decoration: InputDecoration(
+                  counterText: "",
+                  border: InputBorder.none,
+                  hintText: "······",
+                  hintStyle: TextStyle(
+                    color: Colors.grey,
+                    fontSize: 24,
+                  ),
+                ),
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                ],
+                onChanged: (value) {
+                  if (value.length == 6) {
+                    _verifyPin();
+                  }
+                },
               ),
+            ),
+          ],
+        ),
       ),
     );
   }
