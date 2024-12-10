@@ -31,7 +31,7 @@ class PaymentSuccessScreen extends StatelessWidget {
               ),
               SizedBox(height: 30),
               Image.asset(
-                'images/ceklistpembayaran.png',
+                'lib/asset/ceklistpembayaran.png',
                 width: 200,
                 height: 160,
               ),
@@ -39,7 +39,7 @@ class PaymentSuccessScreen extends StatelessWidget {
               Text(
                 "PEMBAYARAN BERHASIL!",
                 style: TextStyle(
-                  fontFamily: 'Arial',  // You can change this to any system font
+                  fontFamily: 'Arial', // You can change this to any system font
                   fontWeight: FontWeight.bold,
                   fontSize: 28,
                   color: Colors.white,
@@ -106,7 +106,7 @@ class PaymentSuccessScreen extends StatelessWidget {
                 padding: EdgeInsets.only(bottom: 35),
                 child: Center(
                   child: Image.asset(
-                    'images/logoputih.jpg',
+                    'lib/asset/logo putih.png',
                     width: 550,
                     height: 200,
                   ),

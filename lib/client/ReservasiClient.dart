@@ -8,7 +8,7 @@ class ReservasiClient {
   // Sesuaikan URL dan endpoint dengan device yang digunakan untuk uji coba
 
   // // Untuk emulator
-  static final String url = '192.168.1.4:8000'; // Base URLhttp://127.0.0.1:8000
+  static final String url = '192.168.0.62:8000'; // Base URLhttp://127.0.0.1:8000
   static final String endpoint = '/api/reservations'; // Base endpoint
 
   // Untuk HP
