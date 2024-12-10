@@ -37,7 +37,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.237.62:8000/api/register'),
+        Uri.parse('http://192.168.0.62:8000/api/register'),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -53,7 +53,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
       if (!mounted) return;
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 201) {
           _showMessage('Register Success', isError: false);
           Navigator.pop(context);
       } else {

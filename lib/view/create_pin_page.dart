@@ -1,10 +1,13 @@
+// create_pin_page.dart
 import 'package:flutter/material.dart';
-import 'package:a_salon/view/user.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CreatePinPage extends StatefulWidget {
-  final User user;
+  final Map<String, dynamic> userData;
 
-  const CreatePinPage({super.key, required this.user});
+  const CreatePinPage({super.key, required this.userData});
 
   @override
   _CreatePinPageState createState() => _CreatePinPageState();
@@ -15,10 +18,12 @@ class _CreatePinPageState extends State<CreatePinPage> {
   final TextEditingController _confirmPinController = TextEditingController();
   bool _isPinVisible = false;
   String _errorMessage = '';
+  bool _isLoading = false;
 
-  void _createPin() {
+  Future<void> _createPin() async {
     setState(() {
       _errorMessage = '';
+      _isLoading = true;
     });
 
     String pin = _pinController.text;
@@ -27,6 +32,7 @@ class _CreatePinPageState extends State<CreatePinPage> {
     if (pin.length != 6) {
       setState(() {
         _errorMessage = 'PIN harus terdiri dari 6 digit';
+        _isLoading = false;
       });
       return;
     }
@@ -34,16 +40,52 @@ class _CreatePinPageState extends State<CreatePinPage> {
     if (pin != confirmPin) {
       setState(() {
         _errorMessage = 'PIN tidak cocok';
+        _isLoading = false;
       });
       return;
     }
 
-    // TODO: Implement PIN saving logic (e.g., save to user profile or database)
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('PIN berhasil dibuat')),
-    );
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userId = widget.userData['id'];
 
-    Navigator.pop(context);
+      final response = await http.post(
+        Uri.parse('http://http://192.168.0.62:8000/api/create-pin/$userId'),
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'pin': pin,
+        }),
+      );
+
+      if (!mounted) return;
+
+      if (response.statusCode == 200) {
+        // PIN berhasil dibuat
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('PIN berhasil dibuat')),
+        );
+        Navigator.pop(context, true);
+      } else {
+        // Error membuat PIN
+        final errorData = json.decode(response.body);
+        setState(() {
+          _errorMessage = errorData['message'] ?? 'Gagal membuat PIN';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Terjadi kesalahan: $e';
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -119,13 +161,15 @@ class _CreatePinPageState extends State<CreatePinPage> {
               ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: _createPin,
+              onPressed: _isLoading ? null : _createPin,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF6A9AB0),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 15),
               ),
-              child: const Text('Buat PIN', style: TextStyle(fontSize: 16)),
+              child: _isLoading
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : const Text('Buat PIN', style: TextStyle(fontSize: 16)),
             ),
           ],
         ),

@@ -17,7 +17,7 @@ class PengaturanProfilePage extends StatefulWidget {
 }
 
 class _PengaturanProfilePageState extends State<PengaturanProfilePage> {
-  final String ip = "10.0.0.2";
+  final String ip = "192.168.0.62";
   bool _isLoading = false;
 
   void _navigateToLogin() {
@@ -154,7 +154,7 @@ class _PengaturanProfilePageState extends State<PengaturanProfilePage> {
       }
 
       final response = await http.delete(
-        Uri.parse('http://10.0.2.2:8000/api/profile/delete/$userId'),
+        Uri.parse('http://192.168.0.62:8000/api/profile/delete/$userId'),
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
@@ -244,7 +244,7 @@ class _PengaturanProfilePageState extends State<PengaturanProfilePage> {
       }
 
       final response = await http.post(
-        Uri.parse('http://192.168.237.62:8000/api/profile/logout/$userId'),
+        Uri.parse('http://192.168.0.62:8000/api/profile/logout/$userId'),
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',

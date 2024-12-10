@@ -7,6 +7,7 @@ import 'package:a_salon/view/pengaturan_profile_page.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:a_salon/view/create_pin_page.dart';
 
 class ProfileScreen extends StatefulWidget {
   final int? userid;
@@ -51,7 +52,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
 
       final response = await http.get(
-        Uri.parse('http://10.0.2.2:8000/api/profile/$id'),
+        Uri.parse('http://192.168.0.62:8000/api/profile/$id'),
         headers: {'Accept': 'application/json'},
       );
 
@@ -94,8 +95,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse('http://192.168.237.62:8000/api/profile/photo/$userId'),
-
+        Uri.parse('http://192.168.0.62:8000/api/profile/photo/$userId'),
       );
 
       request.headers.addAll({
@@ -252,12 +252,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           radius: 60,
                           backgroundImage: _profileImage != null
                               ? FileImage(_profileImage!)
-                              : (_savedImageUrl != null && _savedImageUrl!.isNotEmpty
+                              : (_savedImageUrl != null &&
+                                      _savedImageUrl!.isNotEmpty
                                   ? NetworkImage(_savedImageUrl!)
                                   : null) as ImageProvider?,
-                          child: (_profileImage == null && 
-                                  (_savedImageUrl == null || _savedImageUrl!.isEmpty))
-                              ? const Icon(Icons.person, size: 50, color: Colors.white)
+                          child: (_profileImage == null &&
+                                  (_savedImageUrl == null ||
+                                      _savedImageUrl!.isEmpty))
+                              ? const Icon(Icons.person,
+                                  size: 50, color: Colors.white)
                               : null,
                           backgroundColor: const Color(0xFF001F3F),
                         ),
@@ -366,8 +369,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const SizedBox(width: 10),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () {
-                        // PIN creation logic will be implemented here
+                      onPressed: () async {
+                        final result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CreatePinPage(
+                              userData: userData['user'],
+                            ),
+                          ),
+                        );
+
+                        if (result == true) {
+                          // Refresh profile data jika PIN berhasil dibuat
+                          await _loadUserData();
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text('PIN berhasil diperbarui')),
+                            );
+                          }
+                        }
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF6A9AB0),

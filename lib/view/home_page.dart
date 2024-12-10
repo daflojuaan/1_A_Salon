@@ -23,9 +23,22 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    _getSaldo(); 
     _loadUserData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (mounted) {
+      _loadUserData();
+      _getSaldo(); 
+    }
+    });
   }
-  
+
+  Future<void> refreshData() async {
+  if (mounted) {
+    await _loadUserData();
+    await _getSaldo(); 
+  }
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -38,24 +51,61 @@ class _HomePageState extends State<HomePage> {
         const ScanPage(),
         const ProfileScreen(), // Assuming you have a normal ProfilePage without user parameter
       ];
+  
+  Future<void> _getSaldo() async {
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final id = prefs.getInt('userId');
+
+    if (id == null) {
+      throw Exception('User ID not found');
+    }
+
+    print('Fetching saldo for user ID: $id'); // Debug print
+
+    final response = await http.get(
+      Uri.parse('http://192.168.0.62:8000/api/profile/$id'),
+      headers: {'Accept': 'application/json'},
+    );
+
+    print('Saldo Response: ${response.body}'); // Debug print
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      if (mounted) {
+        setState(() {
+                    if (userData['user'] == null) {
+            userData['user'] = {};
+          }
+          userData['user']['saldo'] = data['data']['user']['saldo'];
+        });
+      }
+    } else {
+      throw Exception('Failed to load saldo');
+    }
+  } catch (e) {
+    print('Error getting saldo: $e'); // Debug print
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${e.toString()}')),
+      );
+    }
+  }
+}
 
   Future<void> _loadUserData() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final id = prefs.getInt('userId');
 
-      print('Loading data for user ID: $id');
-
       if (id == null) {
         throw Exception('User ID not found. Please log in.');
       }
 
       final response = await http.get(
-        Uri.parse('http://10.0.2.2:8000/api/profile/$id'),
+        Uri.parse('http://192.168.0.62:8000/api/profile/$id'),
         headers: {'Accept': 'application/json'},
       );
-
-      print('Profile load response: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -66,8 +116,7 @@ class _HomePageState extends State<HomePage> {
           });
         }
       } else {
-        throw Exception(
-            'Failed to load user data. Status: ${response.statusCode}');
+        throw Exception('Failed to load user data. Status: ${response.statusCode}');
       }
     } catch (e) {
       if (mounted) {
@@ -183,7 +232,9 @@ class _HomePageState extends State<HomePage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        isSaldoVisible ? 'Rp. 1.000.000' : 'Rp. *****',
+                        isSaldoVisible 
+                            ? 'Rp. ${(userData['user']?['saldo'] ?? 0).toString()}' 
+                            : 'Rp. ***',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 22,
