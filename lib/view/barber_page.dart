@@ -1,17 +1,110 @@
 import 'package:flutter/material.dart';
-import 'package:a_salon/view/reservation_page.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'dart:io';
+
+class Service {
+  final int id;
+  final int barberId;
+  final String serviceName;
+  final int price;
+
+  Service({
+    required this.id,
+    required this.barberId,
+    required this.serviceName,
+    required this.price,
+  });
+
+  factory Service.fromJson(Map<String, dynamic> json) {
+    return Service(
+      id: json['id'],
+      barberId: json['id_barber'],
+      serviceName: json['name'],
+      price: int.parse(json['harga'].toString()),
+    );
+  }
+}
+
+class Barber {
+  final int id;
+  final String barbername;
+  final String phone;
+  final String experience;
+  final String? photo;
+  List<Service> services = [];
+
+  Barber({
+    required this.id,
+    required this.barbername,
+    required this.phone,
+    required this.experience,
+    this.photo,
+    this.services = const [],
+  });
+
+  factory Barber.fromJson(Map<String, dynamic> json) {
+    return Barber(
+      id: json['id'],
+      barbername: json['barbername'],
+      phone: json['phone'],
+      experience: json['experience'],
+      photo: json['photo'],
+    );
+  }
+}
 
 class BarberProfilePage extends StatelessWidget {
   const BarberProfilePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const BarberList();
+    return const BarberPage();
   }
 }
 
-class BarberList extends StatelessWidget {
-  const BarberList({super.key});
+class BarberPage extends StatefulWidget {
+  const BarberPage({super.key});
+
+  @override
+  State<BarberPage> createState() => _BarberPageState();
+}
+
+class _BarberPageState extends State<BarberPage> {
+  List<Barber> barbers = [];
+
+  @override
+  void initState() {
+    super.initState();
+    getBarbers();
+  }
+
+  Future<void> getBarbers() async {
+    final response =
+        await http.get(Uri.parse('http://10.0.2.2:8000/api/barber'));
+
+    if (response.statusCode == 200) {
+      final List<Barber> loadedBarbers = (json.decode(response.body) as List)
+            .map((data) => Barber.fromJson(data))
+            .toList();
+      
+      for (var barber in loadedBarbers) {
+        final servicesResponse = await http.get(
+          Uri.parse('http://10.0.2.2:8000/api/service/get/${barber.id}'),
+        );
+
+        if (servicesResponse.statusCode == 200) {
+          final List<Service> services = (json.decode(servicesResponse.body) as List)
+              .map((data) => Service.fromJson(data))
+              .toList();
+          barber.services = services;
+        }
+      }
+      setState(() {
+          barbers = loadedBarbers;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,45 +125,25 @@ class BarberList extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Colors.white,
-              Colors.white,
-            ],
+            colors: [Colors.white, Colors.white],
           ),
         ),
-        child: ListView(
+        child: ListView.builder(
           padding: const EdgeInsets.all(16),
-          children: const [
-            BarberCard(
-              name: "John Smith",
-              experience: "5 years experience",
-              rating: 4.8,
-              imageUrl: "/api/placeholder/400/400",
-              specialties: ["Haircut", "Beard Trim", "Hair Coloring", "Styling"],
-              contact: "+1234567890",
-              available: true,
-            ),
-            SizedBox(height: 16),
-            BarberCard(
-              name: "Mike Johnson",
-              experience: "8 years experience",
-              rating: 4.9,
-              imageUrl: "/api/placeholder/400/400",
-              specialties: ["Premium Haircut", "Shaving", "Hair Treatment", "Kids Cut"],
-              contact: "+1234567891",
-              available: true,
-            ),
-            SizedBox(height: 16),
-            BarberCard(
-              name: "David Wilson",
-              experience: "3 years experience",
-              rating: 4.5,
-              imageUrl: "/api/placeholder/400/400",
-              specialties: ["Classic Haircut", "Beard Grooming", "Face Massage"],
-              contact: "+1234567892",
-              available: false,
-            ),
-          ],
+          itemCount: barbers.length,
+          itemBuilder: (context, index) {
+            final barber = barbers[index];
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: BarberCard(
+                name: barber.barbername,
+                experience: '${barber.experience} years experience',
+                imageUrl: barber.photo,
+                contact: barber.phone,
+                services: barber.services, 
+              ),
+            );
+          },
         ),
       ),
     );
@@ -80,21 +153,17 @@ class BarberList extends StatelessWidget {
 class BarberCard extends StatelessWidget {
   final String name;
   final String experience;
-  final double rating;
-  final String imageUrl;
-  final List<String> specialties;
+  final String? imageUrl;
   final String contact;
-  final bool available;
+  final List<Service> services;
 
   const BarberCard({
     super.key,
     required this.name,
     required this.experience,
-    required this.rating,
-    required this.imageUrl,
-    required this.specialties,
+    this.imageUrl,
     required this.contact,
-    required this.available,
+    required this.services,
   });
 
   @override
@@ -109,7 +178,7 @@ class BarberCard extends StatelessWidget {
           ),
           builder: (context) => ServicesBottomSheet(
             name: name,
-            specialties: specialties,
+            services: services,
           ),
         );
       },
@@ -129,38 +198,45 @@ class BarberCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Barber Image with Status Badge
-            Stack(
-              children: [
-                ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
-                  child: Image.network(
-                    imageUrl,
-                    height: 200,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                Positioned(
-                  top: 10,
-                  right: 10,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: available ? Colors.green : Colors.red,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      available ? 'Available' : 'Busy',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+              child: Container(
+                height: 200,
+                color: Colors.grey[300],
+                child: imageUrl != null && imageUrl!.isNotEmpty
+                    ? Image(
+                        image: NetworkImage(imageUrl!),
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          print('Error loading image: $error');
+                          return const Center(
+                            child: Icon(
+                              Icons.person,
+                              size: 50,
+                              color: Colors.grey,
+                            ),
+                          );
+                        },
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Center(
+                            child: CircularProgressIndicator(
+                              value: loadingProgress.expectedTotalBytes != null
+                                  ? loadingProgress.cumulativeBytesLoaded /
+                                      loadingProgress.expectedTotalBytes!
+                                  : null,
+                            ),
+                          );
+                        },
+                      )
+                    : const Center(
+                        child: Icon(
+                          Icons.person,
+                          size: 50,
+                          color: Colors.grey,
+                        ),
                       ),
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
             // Barber Info
             Padding(
@@ -177,23 +253,6 @@ class BarberCard extends StatelessWidget {
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                         ),
-                      ),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.star,
-                            color: Colors.amber,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            rating.toString(),
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
                       ),
                     ],
                   ),
@@ -252,12 +311,12 @@ class BarberCard extends StatelessWidget {
 
 class ServicesBottomSheet extends StatelessWidget {
   final String name;
-  final List<String> specialties;
+  final List<Service> services;
 
   const ServicesBottomSheet({
     super.key,
     required this.name,
-    required this.specialties,
+    required this.services,
   });
 
   @override
@@ -289,62 +348,45 @@ class ServicesBottomSheet extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 20),
-          ...specialties.map((service) => Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade200,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          ...services.map((service) => Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade200,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        service,
+                        service.serviceName,
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                      Icon(
-                        Icons.check_circle,
-                        color: const Color.fromARGB(255, 0, 31, 63),
+                      Text(
+                        'Rp ${service.price.toStringAsFixed(0)}',
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 14,
+                        ),
                       ),
+                    ],
+                  ),
+                  Icon(
+                    Icons.check_circle,
+                    color: const Color.fromARGB(255, 0, 31, 63),
+                  ),
                     ],
                   ),
                 ),
               )),
           const SizedBox(height: 20),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context); // Tutup bottom sheet
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ReservasiView(
-                    ),
-                  ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color.fromARGB(255, 0, 31, 63),
-                padding: const EdgeInsets.symmetric(vertical: 15),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              child: const Text(
-                'Book Appointment',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
         ],
       ),
     );

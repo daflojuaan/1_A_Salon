@@ -35,25 +35,25 @@ class _ReservasiPageState extends State<ReservasiView> {
     '16:00'
   ];
 
-  final List<String> layananDewa = [
+  final List<String> layananDewa= [
     'Haircut',
     'Beard Trim',
     'Hair Coloring',
     'HairStyling',
   ];
-  final List<String> layananArdha = [
+  final List<String> layananArdha= [
     'Premium Cut',
     'Shaving',
     'Hairstyling',
     'Kids Cut',
   ];
-  final List<String> layananHazel = [
+  final List<String> layananHazel= [
     'Haircut',
     'Shaving',
     'Hairstyling',
     'Kids Cut',
   ];
-  final List<String> layananDaflo = [
+  final List<String> layananDaflo= [
     'Haircut',
     'Shaving',
     'Hairstyling',
