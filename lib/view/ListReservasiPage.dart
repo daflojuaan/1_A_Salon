@@ -218,7 +218,7 @@ class _ListReservasiPageState extends State<ListReservasiPage> {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: isHistory
                         ? [
-                          TextButton(
+                            TextButton(
                               onPressed: () {
                                 Navigator.push(
                                   context,
@@ -240,7 +240,7 @@ class _ListReservasiPageState extends State<ListReservasiPage> {
                               ),
                               child: const Text(
                                 'Ulasan',
-                                style: TextStyle(color:  Colors.white),
+                                style: TextStyle(color: Colors.white),
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -274,8 +274,6 @@ class _ListReservasiPageState extends State<ListReservasiPage> {
                                 style: TextStyle(color: Color(0xFF001f3f)),
                               ),
                             ),
-                            
-                            
                           ]
                         : [
                             TextButton(
@@ -289,11 +287,92 @@ class _ListReservasiPageState extends State<ListReservasiPage> {
                                 style: TextStyle(color: Colors.white),
                               ),
                             ),
-                            const SizedBox(width: 8),
+                            const SizedBox(width: 6),
                             TextButton(
                               onPressed: () => _cancelReservation(reservation),
                               style: TextButton.styleFrom(
                                 backgroundColor: const Color(0xFF001f3f),
+                              ),
+                              child: const Text(
+                                'Selesai',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            TextButton(
+                              onPressed: () async {
+                                bool? confirmDelete = await showDialog<bool>(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      backgroundColor: const Color(0xFFEAD8B0),
+                                      title: const Text(
+                                        'KONFIRMASI',
+                                        textAlign: TextAlign
+                                            .center, // Pusatkan teks judul
+                                      ),
+                                      content: const Text(
+                                          'Apakah Anda yakin ingin membatalkan reservasi ini?'),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context).pop(
+                                                false); // Tidak jadi destroy
+                                          },
+                                          child: const Text('Tidak'),
+                                          style: TextButton.styleFrom(
+                                            foregroundColor:
+                                                const Color(0xFF001f3f),
+                                            backgroundColor:
+                                                const Color(0xFF6A9AB0),
+                                          ),
+                                        ),
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context).pop(
+                                                true); // Konfirmasi destroy
+                                          },
+                                          child: const Text('Ya'),
+                                          style: TextButton.styleFrom(
+                                            foregroundColor:
+                                                const Color(0xFF001f3f),
+                                            backgroundColor:
+                                                const Color(0xFF6A9AB0),
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+
+                                if (confirmDelete == true) {
+                                  try {
+                                    await ReservasiClient.destroy(
+                                        reservation.id);
+                                    setState(() {
+                                      activeReservations.removeWhere(
+                                          (r) => r.id == reservation.id);
+                                    });
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content:
+                                            Text('Reservasi berhasil dihapus'),
+                                            backgroundColor: Colors.green,
+                                      ),
+                                    );
+                                  } catch (e) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                            'Gagal menghapus reservasi: $e'),
+                                            backgroundColor: Colors.red,
+                                      ),
+                                    );
+                                  }
+                                }
+                              },
+                              style: TextButton.styleFrom(
+                                backgroundColor: const Color(0xFF800000),
                               ),
                               child: const Text(
                                 'Cancel',

@@ -88,74 +88,85 @@ class _ReservasiPageState extends State<ReservasiPage> {
     }
   }
 
- void _submitReservasi() async {
-  if (_formKey.currentState!.validate()) {
-    bool? confirmed = await showDialog<bool>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('KONFIRMASI'),
-          content: Text('Yakin ingin membuat reservasi?'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false), // Cancel
-              child: Text('Tidak'),
+  void _submitReservasi() async {
+    if (_formKey.currentState!.validate()) {
+      bool? confirmed = await showDialog<bool>(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            backgroundColor: const Color(0xFFEAD8B0),
+            title: const Text(
+              'KONFIRMASI',
+              textAlign: TextAlign.center, // Pusatkan teks judul
             ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(true), // Confirm
-              child: Text('Ya'),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (confirmed == true) {
-      setState(() {
-        _isLoading = true;
-      });
-
-      Reservasi reservasi = Reservasi(
-        id: DateTime.now().millisecondsSinceEpoch, // Temporary unique ID
-        date: _selectedDate!,
-        time: _selectedTime!,
-        barber: _selectedBarber!,
-        service: _selectedService!,
-        status: 'Booked',
+            content: Text('Yakin ingin membuat reservasi?'),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false), // Cancel
+                child: Text('Tidak'),
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color(0xFF001f3f), // Warna teks
+                  backgroundColor: const Color(0xFF6A9AB0), // Warna tombol
+                ),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true), // Confirm
+                child: Text('Ya'),
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color(0xFF001f3f), // Warna teks
+                  backgroundColor: const Color(0xFF6A9AB0), // Warna tombol
+                ),
+              ),
+            ],
+          );
+        },
       );
 
-      try {
-        await ReservasiClient.create(reservasi); // Simulate API call
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Reservasi berhasil dibuat!')),
-        );
-
-        // Reset form
-        _formKey.currentState!.reset();
+      if (confirmed == true) {
         setState(() {
-          _selectedDate = null;
-          _selectedTime = null;
-          _selectedBarber = null;
-          _selectedService = null;
+          _isLoading = true;
         });
 
-        // Navigate back with the newly created reservation
-        Navigator.pop(context, reservasi);
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal menyimpan reservasi: $e')),
+        Reservasi reservasi = Reservasi(
+          id: DateTime.now().millisecondsSinceEpoch, // Temporary unique ID
+          date: _selectedDate!,
+          time: _selectedTime!,
+          barber: _selectedBarber!,
+          service: _selectedService!,
+          status: 'Booked',
         );
-      } finally {
-        setState(() {
-          _isLoading = false;
-        });
+
+        try {
+          await ReservasiClient.create(reservasi); // Simulate API call
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Reservasi berhasil dibuat!'),
+            backgroundColor: Colors.green,),
+          );
+
+          // Reset form
+          _formKey.currentState!.reset();
+          setState(() {
+            _selectedDate = null;
+            _selectedTime = null;
+            _selectedBarber = null;
+            _selectedService = null;
+          });
+
+          // Navigate back with the newly created reservation
+          Navigator.pop(context, reservasi);
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Gagal menyimpan reservasi: $e'),
+            backgroundColor: Colors.red,),
+          );
+        } finally {
+          setState(() {
+            _isLoading = false;
+          });
+        }
       }
     }
   }
-}
-
-
-  
 
   @override
   Widget build(BuildContext context) {
