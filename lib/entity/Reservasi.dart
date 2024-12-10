@@ -7,7 +7,6 @@ class Reservasi {
   final String barber;
   final String service;
   final String status;
-  
 
   Reservasi({
     required this.id,
@@ -18,16 +17,16 @@ class Reservasi {
     required this.status,
   });
 
-factory Reservasi.fromJson(Map<String, dynamic> json) {
-  return Reservasi(
-    id: json['id'] ?? DateTime.now().millisecondsSinceEpoch,
-    date: json['date'] ?? '',
-    time: json['time'] ?? '',
-    barber: json['barber'] ?? '',
-    service: json['service'] ?? '',
-    status: json['status'] ?? '',
-  );
-}
+  factory Reservasi.fromJson(Map<String, dynamic> json) {
+    return Reservasi(
+      id: json['id'],
+      date: json['date'] ?? '',
+      time: json['time'] ?? '',
+      barber: json['barber'] ?? '',
+      service: json['service'] ?? '',
+      status: json['status'] ?? '',
+    );
+  }
 
   Map<String, dynamic> toJson() {
     return {

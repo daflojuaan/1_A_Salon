@@ -1,6 +1,8 @@
 import 'package:a_salon/entity/Reservasi.dart';
+import 'package:a_salon/entity/reservasi_respon.dart';
 import 'dart:convert';
 import 'package:http/http.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ReservasiClient {
   // Sesuaikan URL dan endpoint dengan device yang digunakan untuk uji coba
@@ -14,32 +16,35 @@ class ReservasiClient {
   // static final String endpoint = '/GD_API_1658/public/api/reservasi';
 
   // Mengambil semua reservasi aktif (status = 'Booked')
-static Future<List<Reservasi>> fetchActive() async {
-  try {
-    var response = await get(Uri.http(url, '$endpoint/active'));
-
-    if (response.statusCode != 200) throw Exception(response.reasonPhrase);
-
-    List<dynamic> list = json.decode(response.body);
-    return list.map((e) => Reservasi.fromJson(e)).toList();
-  } catch (e) {
-    return Future.error(e.toString());
+  static Future<ReservasiResponse> fetchActive() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final id = await prefs.getInt('userId');
+      var response =
+          await get(Uri.parse('http://10.0.2.2:8000/api/reservations/active/$id'));
+      print(response.body);
+      if (response.statusCode != 200) throw Exception(response.reasonPhrase);
+      print(response.body);
+      final data = ReservasiResponse.fromJson(json.decode(response.body));
+      return data;
+    } catch (e) {
+      return Future.error(e.toString());
+    }
   }
-}
 
   // Mengambil semua reservasi yang dibatalkan (status = '')
-static Future<List<Reservasi>> fetchCanceled() async {
-  try {
-    var response = await get(Uri.http(url, '$endpoint/canceled'));
+  static Future<List<Reservasi>> fetchCanceled() async {
+    try {
+      var response = await get(Uri.http(url, '$endpoint/canceled'));
 
-    if (response.statusCode != 200) throw Exception(response.reasonPhrase);
+      if (response.statusCode != 200) throw Exception(response.reasonPhrase);
 
-    List<dynamic> list = json.decode(response.body);
-    return list.map((e) => Reservasi.fromJson(e)).toList();
-  } catch (e) {
-    return Future.error(e.toString());
+      List<dynamic> list = json.decode(response.body);
+      return list.map((e) => Reservasi.fromJson(e)).toList();
+    } catch (e) {
+      return Future.error(e.toString());
+    }
   }
-}
 
   // Mengambil data reservasi berdasarkan ID
   static Future<Reservasi> find(id) async {
@@ -102,18 +107,18 @@ static Future<List<Reservasi>> fetchCanceled() async {
   }
 
   // Membatalkan reservasi (set status = 'Selesai')
- static Future<Response> cancel(int id) async {
-  try {
-    var response = await patch(
-      Uri.http(url, '$endpoint/$id/cancel'),
-      headers: {"Content-Type": "application/json"},
-    );
+  static Future<Response> cancel(int id) async {
+    try {
+      var response = await patch(
+        Uri.http(url, '$endpoint/$id/cancel'),
+        headers: {"Content-Type": "application/json"},
+      );
 
-    if (response.statusCode != 200) throw Exception(response.reasonPhrase);
+      if (response.statusCode != 200) throw Exception(response.reasonPhrase);
 
-    return response;
-  } catch (e) {
-    return Future.error(e.toString());
+      return response;
+    } catch (e) {
+      return Future.error(e.toString());
+    }
   }
-}
 }

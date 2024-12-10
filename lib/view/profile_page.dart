@@ -95,7 +95,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse('http://192.168.0.62:8000/api/profile/photo/$userId'),
+        Uri.parse('http://10.0.2.2:8000/api/profile/photo/$userId'),
       );
 
       request.headers.addAll({

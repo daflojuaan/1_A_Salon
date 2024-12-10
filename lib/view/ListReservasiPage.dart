@@ -1,3 +1,4 @@
+import 'package:a_salon/entity/reservasi_respon.dart';
 import 'package:flutter/material.dart';
 import 'package:a_salon/view/ReservasiPage.dart';
 import 'package:a_salon/client/ReservasiClient.dart';
@@ -17,6 +18,7 @@ class _ListReservasiPageState extends State<ListReservasiPage> {
   List<Reservasi> activeReservations = [];
   List<Reservasi> canceledReservations = [];
   bool _isLoading = false;
+  Reservasis? listReservasi;
 
   @override
   void initState() {
@@ -49,7 +51,7 @@ class _ListReservasiPageState extends State<ListReservasiPage> {
     try {
       var reservations = await ReservasiClient.fetchActive();
       setState(() {
-        activeReservations = reservations;
+        // listReservasi = reservations;
       });
     } catch (e) {
       print('Error loading active reservations: $e');
@@ -357,7 +359,7 @@ class _ListReservasiPageState extends State<ListReservasiPage> {
                                       const SnackBar(
                                         content:
                                             Text('Reservasi berhasil dihapus'),
-                                            backgroundColor: Colors.green,
+                                        backgroundColor: Colors.green,
                                       ),
                                     );
                                   } catch (e) {
@@ -365,7 +367,7 @@ class _ListReservasiPageState extends State<ListReservasiPage> {
                                       SnackBar(
                                         content: Text(
                                             'Gagal menghapus reservasi: $e'),
-                                            backgroundColor: Colors.red,
+                                        backgroundColor: Colors.red,
                                       ),
                                     );
                                   }

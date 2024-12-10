@@ -1,7 +1,61 @@
 import 'package:flutter/material.dart';
 import 'package:a_salon/entity/Reservasi.dart';
 import 'package:a_salon/client/ReservasiClient.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 // import 'package:list/view/ListReservasiPage.dart';
+
+class Service {
+  final int id;
+  final int barberId;
+  final String serviceName;
+  final int price;
+
+  Service({
+    required this.id,
+    required this.barberId,
+    required this.serviceName,
+    required this.price,
+  });
+
+  factory Service.fromJson(Map<String, dynamic> json) {
+    return Service(
+      id: json['id'],
+      barberId: json['id_barber'],
+      serviceName: json['name'],
+      price: int.parse(json['harga'].toString()),
+    );
+  }
+}
+
+class Barber {
+  final int id;
+  final String barbername;
+  final String phone;
+  final String experience;
+  final String? photo;
+  List<Service> services = [];
+
+  Barber({
+    required this.id,
+    required this.barbername,
+    required this.phone,
+    required this.experience,
+    this.photo,
+    this.services = const [],
+  });
+
+  factory Barber.fromJson(Map<String, dynamic> json) {
+    return Barber(
+      id: json['id'],
+      barbername: json['barbername'],
+      phone: json['phone'],
+      experience: json['experience'],
+      photo: json['photo'],
+    );
+  }
+}
 
 class ReservasiPage extends StatefulWidget {
   @override
@@ -15,8 +69,72 @@ class _ReservasiPageState extends State<ReservasiPage> {
   String? _selectedTime;
   String? _selectedBarber;
   String? _selectedService;
+  int _selectedPrice = 0;
 
   bool _isLoading = false;
+
+  List<Barber> barbers = [];
+  List<Service> service = [];
+
+  @override
+  void initState() {
+    super.initState();
+    getBarbers();
+  }
+
+  Future<void> getBarbers() async {
+    final response =
+        await http.get(Uri.parse('http://10.0.2.2:8000/api/barber'));
+
+    if (response.statusCode == 200) {
+      final List<Barber> loadedBarbers = (json.decode(response.body) as List)
+          .map((data) => Barber.fromJson(data))
+          .toList();
+
+      for (var barber in loadedBarbers) {
+        final servicesResponse = await http.get(
+          Uri.parse('http://10.0.2.2:8000/api/service/get/${barber.id}'),
+        );
+
+        if (servicesResponse.statusCode == 200) {
+          final List<Service> services =
+              (json.decode(servicesResponse.body) as List)
+                  .map((data) => Service.fromJson(data))
+                  .toList();
+          barber.services = services;
+        }
+      }
+      setState(() {
+        barbers = loadedBarbers;
+      });
+    }
+  }
+
+  Future<void> _addReservasi() async {
+    final prefs = await SharedPreferences.getInstance();
+    final id = prefs.getInt('userId');
+    try {
+      final response = await http.post(
+        Uri.parse('http://10.0.2.2:8000/api/reservations'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: json.encode({
+          'id_user': id,
+          'date': _selectedDate!,
+          'time': _selectedTime!,
+          'barber': _selectedBarber!,
+          'service': _selectedService!,
+          'harga' : _selectedPrice,
+          'status': "Booked",
+        }),
+      );
+      if (response.statusCode != 201) throw Exception(response.reasonPhrase);
+    } catch (e) {
+      return Future.error(e.toString());
+    }
+  }
 
   final List<String> _times = [
     '09:00',
@@ -27,51 +145,6 @@ class _ReservasiPageState extends State<ReservasiPage> {
     '15:00',
     '16:00'
   ];
-
-  final List<String> _barbers = ['Dewa', 'Ardha', 'Hazel', 'Daflo'];
-
-  List<String> _services = [
-    'Premium Cut',
-    'Shaving',
-    'Hairstyling',
-    'Kids Cut',
-  ];
-
-  void _updateServices(String barber) {
-    switch (barber) {
-      case 'Ardha':
-        setState(() {
-          _services = [
-            'Premium Cut',
-            'Shaving',
-            'Hairstyling',
-            'Kids Cut',
-          ];
-        });
-        break;
-      case 'Hazel':
-        setState(() {
-          _services = [
-            'Haircut',
-            'Shaving',
-            'Hairstyling',
-            'Kids Cut',
-          ];
-        });
-        break;
-      case 'Dewa':
-        setState(() {
-          _services = [
-            'Haircut',
-            'Beard Trim',
-            'Hair Coloring',
-            'HairStyling',
-          ];
-        });
-        break;
-      default:
-    }
-  }
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -127,23 +200,32 @@ class _ReservasiPageState extends State<ReservasiPage> {
           _isLoading = true;
         });
 
-        Reservasi reservasi = Reservasi(
-          id: DateTime.now().millisecondsSinceEpoch, // Temporary unique ID
-          date: _selectedDate!,
-          time: _selectedTime!,
-          barber: _selectedBarber!,
-          service: _selectedService!,
-          status: 'Booked',
-        );
-
+        final prefs = await SharedPreferences.getInstance();
+        final id = prefs.getInt('userId');
         try {
-          await ReservasiClient.create(reservasi); // Simulate API call
+          final response = await http.post(
+            Uri.parse('http://10.0.2.2:8000/api/reservations'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            },
+            body: json.encode({
+              'id_user': id,
+              'date': _selectedDate!,
+              'time': _selectedTime!,
+              'barber': _selectedBarber!,
+              'service': _selectedService!,
+              'harga' : _selectedPrice,
+              'status': "Booked",
+            }),
+          );
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Reservasi berhasil dibuat!'),
-            backgroundColor: Colors.green,),
+            SnackBar(
+              content: Text('Reservasi berhasil dibuat!'),
+              backgroundColor: Colors.green,
+            ),
           );
 
-          // Reset form
           _formKey.currentState!.reset();
           setState(() {
             _selectedDate = null;
@@ -152,18 +234,52 @@ class _ReservasiPageState extends State<ReservasiPage> {
             _selectedService = null;
           });
 
-          // Navigate back with the newly created reservation
-          Navigator.pop(context, reservasi);
+          if (response.statusCode != 201) throw Exception(response.reasonPhrase);
         } catch (e) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Gagal menyimpan reservasi: $e'),
-            backgroundColor: Colors.red,),
+            SnackBar(
+              content: Text('Gagal menyimpan reservasi: $e'),
+              backgroundColor: Colors.red,
+            ),
           );
         } finally {
           setState(() {
             _isLoading = false;
           });
         }
+
+        // try {
+        //   await ReservasiClient.create(reservasi); // Simulate API call
+        //   ScaffoldMessenger.of(context).showSnackBar(
+        //     SnackBar(
+        //       content: Text('Reservasi berhasil dibuat!'),
+        //       backgroundColor: Colors.green,
+        //     ),
+        //   );
+
+        //   // Reset form
+        //   _formKey.currentState!.reset();
+        //   setState(() {
+        //     _selectedDate = null;
+        //     _selectedTime = null;
+        //     _selectedBarber = null;
+        //     _selectedService = null;
+        //   });
+
+        //   // Navigate back with the newly created reservation
+        //   Navigator.pop(context, reservasi);
+        // } catch (e) {
+        //   ScaffoldMessenger.of(context).showSnackBar(
+        //     SnackBar(
+        //       content: Text('Gagal menyimpan reservasi: $e'),
+        //       backgroundColor: Colors.red,
+        //     ),
+        //   );
+        // } finally {
+        //   setState(() {
+        //     _isLoading = false;
+        //   });
+        // }
       }
     }
   }
@@ -264,16 +380,24 @@ class _ReservasiPageState extends State<ReservasiPage> {
                   ),
                 ),
                 value: _selectedBarber,
-                items: _barbers.map((barber) {
+                items: barbers.map((barber) {
                   return DropdownMenuItem<String>(
-                    value: barber,
-                    child: Text(barber),
+                    value: barber.barbername,
+                    child: Text(barber.barbername),
                   );
                 }).toList(),
                 onChanged: (value) {
                   setState(() {
                     _selectedBarber = value;
-                    _updateServices(value!);
+                    _selectedService = null;
+
+                    if (value != null) {
+                      final selectedBarber = barbers.firstWhere(
+                        (barber) => barber.barbername == value,
+                      );
+                      service = selectedBarber
+                          .services; // Update service list dengan service dari barber yang dipilih
+                    }
                   });
                 },
                 validator: (value) {
@@ -299,15 +423,22 @@ class _ReservasiPageState extends State<ReservasiPage> {
                     ),
                   ),
                   value: _selectedService,
-                  items: _services.map((service) {
+                  items: service.map((service) {
                     return DropdownMenuItem<String>(
-                      value: service,
-                      child: Text(service),
+                      value: service.serviceName,
+                      child:
+                          Text('${service.serviceName} - Rp ${service.price}'),
                     );
                   }).toList(),
                   onChanged: (value) {
                     setState(() {
                       _selectedService = value;
+                      if (value != null) {
+                        final selectedService = service.firstWhere(
+                          (service) => service.serviceName == value,
+                        );
+                        _selectedPrice = selectedService.price;
+                      }
                     });
                   },
                   validator: (value) {
