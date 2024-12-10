@@ -21,10 +21,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'A Salon Ulang',
+      
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      initialRoute: '/',  // Menentukan halaman pertama yang akan muncul
+      initialRoute: '/', // Menentukan halaman pertama yang akan muncul
       routes: {
         '/': (context) => const LoginPage(), // Halaman pertama (LoginPage)
         '/register': (context) => const RegisterPage(),
@@ -36,7 +37,8 @@ class MyApp extends StatelessWidget {
         '/topup': (context) => const TopUpSaldoPage(), // Halaman TopUpSaldoPage
         '/barber': (context) => const BarberProfilePage(),
         '/notification': (context) => const NotificationPage(),
-        '/caraPembayaran': (context) => const CaraPembayaranPage(amount: 0, paymentMethod: 'Bank Transfer'),
+        '/caraPembayaran': (context) =>
+            const CaraPembayaranPage(amount: 0, paymentMethod: 'Bank Transfer'),
       },
     );
   }
