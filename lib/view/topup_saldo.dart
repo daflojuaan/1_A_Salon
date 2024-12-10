@@ -25,7 +25,7 @@ class _TopUpSaldoPageState extends State<TopUpSaldoPage> {
   List<String> ewallets = ['DANA', 'GOPAY', 'ShopeePay', 'OVO'];
 
   // Base URL API Laravel
-  final String apiUrl = 'http://192.168.0.62:8000/api';
+  final String apiUrl = 'http://10.0.2.2:8000/api';
 
 Future<void> addSaldo() async {
     if (paymentMethod == 'Bank Transfer' && selectedBank == null) {

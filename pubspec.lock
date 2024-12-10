@@ -411,11 +411,12 @@ packages:
   plugin_platform_interface:
     dependency: transitive
     description:
-      name: plugin_platform_interface
+      name: plugin_platform_interfacehttps://github.com/220711927/1_A_Salon/pull/45/conflict?name=pubspec.lock&ancestor_oid=aed4086f7655889f47381d630144693d4a8bdcea&base_oid=c02917fe1fb6497187561c8595b9d829060b8524&head_oid=e8a3d96ebe8e4ae99d7db98a87e3ba8a36e04d4b
       sha256: "4820fbfdb9478b1ebae27888254d445073732dae3d6ea81f0b7e06d5dedc3f02"
       url: "https://pub.dev"
     source: hosted
     version: "2.1.8"
+
   qr:
     dependency: transitive
     description:
@@ -424,6 +425,7 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.2"
+
   riverpod:
     dependency: transitive
     description:
@@ -432,6 +434,7 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.6.1"
+
   screen_brightness:
     dependency: "direct main"
     description:
@@ -480,6 +483,7 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.1"
+
   shared_preferences:
     dependency: "direct main"
     description:
@@ -694,5 +698,7 @@ packages:
     source: hosted
     version: "1.1.0"
 sdks:
+
   dart: ">=3.5.2 <4.0.0"
+
   flutter: ">=3.24.0"

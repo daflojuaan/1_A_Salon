@@ -16,7 +16,7 @@ class EditProfilePage extends StatefulWidget {
 }
 
 class _EditProfilePageState extends State<EditProfilePage> {
-  final String ip = "192.168.0.62"; //kalo mau ganti ip dari sini aja 
+  final String ip = "10.0.2.2"; //kalo mau ganti ip dari sini aja 
 
 
   late TextEditingController _usernameController;
