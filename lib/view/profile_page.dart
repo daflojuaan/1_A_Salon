@@ -246,12 +246,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ),
                     const SizedBox(height: 10),
+
                     Stack(
                       children: [
                         CircleAvatar(
                           radius: 60,
                           backgroundImage: _profileImage != null
                               ? FileImage(_profileImage!)
+
                               : (_savedImageUrl != null &&
                                       _savedImageUrl!.isNotEmpty
                                   ? NetworkImage(_savedImageUrl!)
