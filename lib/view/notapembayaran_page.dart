@@ -41,7 +41,7 @@ class NotaPembayaran extends StatelessWidget {
                             SizedBox(height: isSmallScreen ? 16 : 30),
                             Center(
                               child: Image.asset(
-                                'images/logobiru.jpg',
+                                'lib/asset/logo biru.png',
                                 width: isSmallScreen ? screenWidth * 0.6 : 350,
                                 height: isSmallScreen ? screenWidth * 0.24 : 140,
                                 fit: BoxFit.contain,

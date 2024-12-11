@@ -81,7 +81,7 @@ class _BarberPageState extends State<BarberPage> {
 
   Future<void> getBarbers() async {
     final response =
-        await http.get(Uri.parse('http://10.0.2.2:8000/api/barber'));
+        await http.get(Uri.parse('http://192.168.0.62:8000/api/barber'));
 
     if (response.statusCode == 200) {
       final List<Barber> loadedBarbers = (json.decode(response.body) as List)
@@ -90,7 +90,7 @@ class _BarberPageState extends State<BarberPage> {
       
       for (var barber in loadedBarbers) {
         final servicesResponse = await http.get(
-          Uri.parse('http://10.0.2.2:8000/api/service/get/${barber.id}'),
+          Uri.parse('http://192.168.0.62:8000/api/service/get/${barber.id}'),
         );
 
         if (servicesResponse.statusCode == 200) {
