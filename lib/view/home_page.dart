@@ -1,14 +1,13 @@
-import 'package:a_salon/view/profile_page.dart';
 import 'package:a_salon/view/scan_page.dart';
+import 'package:a_salon/view/profile_page.dart';
 import 'package:flutter/material.dart';
-import 'package:a_salon/database/database_helper.dart';
-import 'package:a_salon/view/user.dart';
-import 'topup_saldo.dart';
 import 'package:a_salon/view/notification_page.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
-  final User user;
-  const HomePage({super.key, required this.user});
+  const HomePage({super.key});
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -17,26 +16,128 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
   bool isSaldoVisible = false;
+  bool _isLoading = true;
 
-  void _onItemTapped(int index){
+  Map<String, dynamic> userData = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _getSaldo();
+    _loadUserData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _loadUserData();
+        _getSaldo();
+      }
+    });
+  }
+
+  Future<void> refreshData() async {
+    if (mounted) {
+      await _loadUserData();
+      await _getSaldo();
+    }
+  }
+
+  void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
   }
 
-  @override
-  void initState() {
-    super.initState();
+  List<Widget> get _pages => [
+        _buildHomePage(context),
+        const ScanPage(),
+        const ProfileScreen(), // Assuming you have a normal ProfilePage without user parameter
+      ];
+
+  Future<void> _getSaldo() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final id = prefs.getInt('userId');
+
+      if (id == null) {
+        throw Exception('User ID not found');
+      }
+
+      print('Fetching saldo for user ID: $id'); // Debug print
+
+      final response = await http.get(
+        Uri.parse('http://192.168.0.62:8000/api/profile/$id'),
+        headers: {'Accept': 'application/json'},
+      );
+
+      print('Saldo Response: ${response.body}'); // Debug print
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (mounted) {
+          setState(() {
+            if (userData['user'] == null) {
+              userData['user'] = {};
+            }
+            userData['user']['saldo'] = data['data']['user']['saldo'];
+          });
+        }
+      } else {
+        throw Exception('Failed to load saldo');
+      }
+    } catch (e) {
+      print('Error getting saldo: $e'); // Debug print
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: ${e.toString()}')),
+        );
+      }
+    }
+  }
+
+  Future<void> _loadUserData() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final id = prefs.getInt('userId');
+
+      if (id == null) {
+        throw Exception('User ID not found. Please log in.');
+      }
+
+      final response = await http.get(
+        Uri.parse('http://192.168.0.62:8000/api/profile/$id'),
+        headers: {'Accept': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (mounted) {
+          setState(() {
+            userData = data['data'];
+            _isLoading = false;
+          });
+        }
+      } else {
+        throw Exception(
+            'Failed to load user data. Status: ${response.statusCode}');
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: ${e.toString()}')),
+        );
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final List<Widget> _pages = [
-      _buildHomePage(context),
-      const ScanPage(),
-      ProfileScreen(user: widget.user),
-    ];
-
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -46,7 +147,7 @@ class _HomePageState extends State<HomePage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_outlined,
-            color: Color(0xFF1B3358)),
+                color: Color(0xFF1B3358)),
             onPressed: () {
               Navigator.push(
                 context,
@@ -58,7 +159,7 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      body: _pages[_selectedIndex], // Menampilkan halaman aktif
+      body: _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
@@ -91,9 +192,9 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'SELAMAT DATANG,',
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w800,
                 color: Color(0xFF1B3358),
@@ -101,11 +202,12 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             Text(
-              widget.user.username,
+              userData['user']['username'] ?? 'GUEST',
               style: const TextStyle(
-                fontSize: 18,
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
                 color: Color(0xFF1B3358),
-                fontWeight: FontWeight.w500,
+                letterSpacing: 0.5,
               ),
             ),
             const SizedBox(height: 20),
@@ -131,7 +233,9 @@ class _HomePageState extends State<HomePage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        isSaldoVisible ? 'Rp. 1.000.000' : 'Rp. *****',
+                        isSaldoVisible
+                            ? 'Rp. ${(userData['user']?['saldo'] ?? 0).toString()}'
+                            : 'Rp. ***',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 22,
@@ -178,25 +282,6 @@ class _HomePageState extends State<HomePage> {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: const [
-                      Text(
-                        'Point',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 14,
-                        ),
-                      ),
-                      Text(
-                        'Bonus',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
-                  ),
                 ],
               ),
             ),
@@ -303,89 +388,90 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildPromoSection(BuildContext context, String title,
-    List<Map<String, String>> promoItems) {
-  return Container(
-    height: 200,
-    width: MediaQuery.of(context).size.width * 0.9,
-    color: const Color(0xFF001F3F),
-    alignment: Alignment.topLeft,
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(10.0),
-          child: Text(
-            '-$title-',
-            style: const TextStyle(color: Colors.white, fontSize: 20),
+      List<Map<String, String>> promoItems) {
+    return Container(
+      height: 200,
+      width: MediaQuery.of(context).size.width * 0.9,
+      color: const Color(0xFF001F3F),
+      alignment: Alignment.topLeft,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Text(
+              '-$title-',
+              style: const TextStyle(color: Colors.white, fontSize: 20),
+            ),
           ),
-        ),
-        Expanded(
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: promoItems.length,
-            itemBuilder: (context, index) {
-              final promo = promoItems[index];
-              return GestureDetector(
-                onTap: () => _showPromoNotification(context, promo['title']!),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: _buildPromoBox(promo['image']!),
-                ),
-              );
-            },
+          Expanded(
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: promoItems.length,
+              itemBuilder: (context, index) {
+                final promo = promoItems[index];
+                return GestureDetector(
+                  onTap: () => _showPromoNotification(context, promo['title']!),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: _buildPromoBox(promo['image']!),
+                  ),
+                );
+              },
+            ),
           ),
-        ),
-      ],
-    ),
-  );
-}
+        ],
+      ),
+    );
+  }
 
-void _showPromoNotification(BuildContext context, String promoTitle) {
-  showModalBottomSheet(
-    context: context,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-    ),
-    builder: (context) {
-      return Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Detail Promo',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1B3358),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              promoTitle,
-              style: const TextStyle(
-                fontSize: 16,
-                color: Colors.black87,
-              ),
-            ),
-            const SizedBox(height: 20),
-            Align(
-              alignment: Alignment.centerRight,
-              child: ElevatedButton(
-                onPressed: () => Navigator.pop(context),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF1B3358),
+  void _showPromoNotification(BuildContext context, String promoTitle) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Detail Promo',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1B3358),
                 ),
-                child: const Text('Tutup'),
               ),
-            ),
-          ],
-        ),
-      );
-    },
-  );
-}
+              const SizedBox(height: 10),
+              Text(
+                promoTitle,
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Align(
+                alignment: Alignment.centerRight,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF1B3358),
+                  ),
+                  child: const Text('Tutup'),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildPromoBox(String imagePath) {
     return Container(
       width: 380,

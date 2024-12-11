@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'package:a_salon/view/caraPembayaranPage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:a_salon/view/home_page.dart';
 
 class TopUpSaldoPage extends StatefulWidget {
   const TopUpSaldoPage({super.key});
@@ -14,12 +18,134 @@ class _TopUpSaldoPageState extends State<TopUpSaldoPage> {
   String paymentMethod = 'Bank Transfer';
   TextEditingController customAmountController = TextEditingController();
   String? selectedBank;
+  bool _isLoading = false;
 
   // Daftar bank yang tersedia
   List<String> banks = ['BCA', 'BRI', 'Mandiri', 'BNI'];
-
-  // Daftar E-wallet yang tersedia
   List<String> ewallets = ['DANA', 'GOPAY', 'ShopeePay', 'OVO'];
+
+  // Base URL API Laravel
+  final String apiUrl = 'http://192.168.0.62:8000/api';
+
+Future<void> addSaldo() async {
+    if (paymentMethod == 'Bank Transfer' && selectedBank == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Silakan pilih bank terlebih dahulu')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getInt('userId');
+
+      if (userId == null) {
+        throw Exception('User ID not found');
+      }
+
+      final response = await http.post(
+        Uri.parse('$apiUrl/profile/topup/$userId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode({
+          'user_id': userId,
+          'amount': selectedAmount,
+          'payment_method': paymentMethod,
+          'bank': selectedBank,
+        }),
+      );
+
+      final responseData = json.decode(response.body);
+      
+      if (response.statusCode == 200) {
+        // Reset loading state
+        setState(() => _isLoading = false);
+
+        // Show success dialog
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text(
+                'Top Up Berhasil',
+                style: TextStyle(color: Colors.green),
+                textAlign: TextAlign.center,
+              ),
+              content: Text(
+                'Top up sebesar Rp ${selectedAmount.toString()} berhasil',
+                textAlign: TextAlign.center,
+              ),
+            );
+          },
+        );
+
+        // Wait 3 seconds then navigate back to home
+        await Future.delayed(const Duration(seconds: 3));
+        
+        if (mounted) {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => const HomePage()),
+            (route) => false
+          );
+        }
+      } else {
+        setState(() => _isLoading = false);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(responseData['message'] ?? 'Top up gagal'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  void _showSuccessModal(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text(
+            'Top Up Berhasil',
+            style: TextStyle(color: Colors.green),
+            textAlign: TextAlign.center,
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                message,
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +178,7 @@ class _TopUpSaldoPageState extends State<TopUpSaldoPage> {
               spacing: 15.0,
               children: topUpAmounts.map((amount) {
                 return ChoiceChip(
-                  label: Text('Rp. $amount'),
+                  label: Text('Rp. ${amount.toString()}'),
                   selected: selectedAmount == amount,
                   onSelected: (selected) {
                     setState(() {
@@ -79,7 +205,7 @@ class _TopUpSaldoPageState extends State<TopUpSaldoPage> {
             TextField(
               controller: customAmountController,
               keyboardType: TextInputType.number,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 border: OutlineInputBorder(),
                 labelText: 'Jumlah Top Up',
                 hintText: 'Masukkan jumlah top up',
@@ -106,10 +232,8 @@ class _TopUpSaldoPageState extends State<TopUpSaldoPage> {
                 _buildPaymentMethodOption('E-wallet'),
               ],
             ),
-            // Menampilkan pilihan bank jika Bank Transfer dipilih
-            if (paymentMethod == 'Bank Transfer')
+            if (paymentMethod == 'Bank Transfer') ...[
               const SizedBox(height: 20),
-            if (paymentMethod == 'Bank Transfer')
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -140,28 +264,35 @@ class _TopUpSaldoPageState extends State<TopUpSaldoPage> {
                   ),
                 ],
               ),
+            ],
             const SizedBox(height: 30),
             Center(
               child: ElevatedButton(
-                onPressed: () {
-                  _topUpSaldo(context);
-                },
+                onPressed: _isLoading ? null : addSaldo,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF2B5585),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 50, vertical: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 12),
                 ),
-                child: const Text(
-                  'Top Up Sekarang',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
+                child: _isLoading
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Text(
+                        'Top Up Sekarang',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
               ),
             ),
           ],
@@ -172,15 +303,17 @@ class _TopUpSaldoPageState extends State<TopUpSaldoPage> {
 
   Widget _buildPaymentMethodOption(String method) {
     return ListTile(
-      title: Text(method,
-          style: const TextStyle(fontSize: 16, color: Color(0xFF1B3358))),
+      title: Text(
+        method,
+        style: const TextStyle(fontSize: 16, color: Color(0xFF1B3358)),
+      ),
       leading: Radio<String>(
         value: method,
         groupValue: paymentMethod,
         onChanged: (value) {
           setState(() {
             paymentMethod = value!;
-            selectedBank = null; // Reset bank selection when changing method
+            selectedBank = null;
           });
         },
         activeColor: const Color(0xFFFFC107),
@@ -189,7 +322,6 @@ class _TopUpSaldoPageState extends State<TopUpSaldoPage> {
   }
 
   void _topUpSaldo(BuildContext context) {
-    // Navigate to CaraPembayaranPage with payment method details
     Navigator.push(
       context,
       MaterialPageRoute(
