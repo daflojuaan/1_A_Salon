@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -6,7 +7,6 @@ import 'package:a_salon/entity/user.dart';
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key, this.id});
   final int? id;
-
   @override
   _RegisterPageState createState() => _RegisterPageState();
 }
@@ -103,6 +103,8 @@ class _RegisterPageState extends State<RegisterPage> {
       _showMessage('All fields are required!', isError: true);
       return false;
     }
+    return true;
+  }
 
     if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(_emailController.text)) {
       _showMessage('Please enter a valid email address', isError: true);
@@ -117,6 +119,54 @@ class _RegisterPageState extends State<RegisterPage> {
     if (_passwordController.text.length < 8 && !_passwordController.text.contains('%') || !_passwordController.text.contains('&')) {
       _showMessage('Password must be at least 8 characters', isError: true);
       return false;
+  // Improved registration method
+  void _register() async {
+    if (!_validateInputs()) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Use full URL with proper protocol
+      final response = await http.post(
+        Uri.parse('http://192.168.237.62:8000/api/user'),// Replace with actual backend URL
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: json.encode({
+          'username': _usernameController.text,
+          'email': _emailController.text,
+          'password': _passwordController.text,
+          'phone': _phoneController.text,
+          'gender': _selectedGender,
+        }),
+      );
+
+      setState(() {
+        _isLoading = false;
+      });
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        // Successful registration
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Registration Successful'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Navigator.pop(context); // Or navigate to login page
+      } else {
+        // Handle specific error responses
+        final errorBody = json.decode(response.body);
+        _showError(errorBody['message'] ?? 'Registration failed');
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      _showError('Network error: $e');
     }
 
     return true;
@@ -180,6 +230,76 @@ class _RegisterPageState extends State<RegisterPage> {
           ],
           onChanged: (value) => setState(() => _selectedGender = value),
           hint: const Text('Pilih Gender'),
+          isExpanded: true,
+        ),
+      ),
+    );
+  }
+
+  // Build TextField widget
+  Widget _buildTextField(
+      TextEditingController controller, String label, IconData icon,
+      {bool isPassword = false}) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: TextField(
+          controller: controller,
+          obscureText: isPassword && !_isPasswordVisible,
+          decoration: InputDecoration(
+            labelText: label,
+            labelStyle: TextStyle(color: Color.fromARGB(255, 0, 31, 63)),
+            prefixIcon: Icon(icon, color: Color.fromARGB(255, 0, 31, 63)),
+            suffixIcon: isPassword
+                ? IconButton(
+                    icon: Icon(
+                      _isPasswordVisible
+                          ? Icons.visibility
+                          : Icons.visibility_off,
+                      color: Color.fromARGB(255, 0, 31, 63),
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _isPasswordVisible = !_isPasswordVisible;
+                      });
+                    },
+                  )
+                : null,
+            border: InputBorder.none,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Build Gender Dropdown widget
+  Widget _buildGenderDropdown() {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: DropdownButtonFormField<String>(
+          value: _selectedGender,
+          decoration: InputDecoration(
+            labelText: 'Gender',
+            labelStyle: TextStyle(color: Color.fromARGB(255, 0, 31, 63)),
+            prefixIcon:
+                Icon(Icons.people, color: Color.fromARGB(255, 0, 31, 63)),
+            border: InputBorder.none,
+          ),
+          items: const [
+            DropdownMenuItem(value: 'Laki-laki', child: Text('Laki-Laki')),
+            DropdownMenuItem(value: 'Perempuan', child: Text('Perempuan')),
+          ],
+          onChanged: (value) {
+            setState(() {
+              _selectedGender = value;
+            });
+          },
+          hint: Text('Pilih Gender'),
           isExpanded: true,
         ),
       ),
