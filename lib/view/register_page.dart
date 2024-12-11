@@ -37,7 +37,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.0.62:8000/api/register'),
+        Uri.parse('http://10.0.2.2:8000/api/register'),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -114,8 +114,8 @@ class _RegisterPageState extends State<RegisterPage> {
       return false;
   }
 
-    if (_passwordController.text.length < 8) {
-      _showMessage('Password must be at least 8 characters', isError: true);
+    if (_passwordController.text.length < 8 && !_passwordController.text.contains('%') || !_passwordController.text.contains('&')) {
+      _showMessage('Password must be at least 8 characters and contains % or &', isError: true);
       return false;
     }
 
