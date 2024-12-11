@@ -214,7 +214,7 @@ class _HomePageState extends State<HomePage> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: const Color(0xFF2B5585),
+                color: const Color.fromARGB(255, 234, 212, 48),
                 borderRadius: BorderRadius.circular(15),
               ),
               child: Column(
@@ -262,7 +262,7 @@ class _HomePageState extends State<HomePage> {
                               Navigator.pushNamed(context, '/topup');
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFFFC107),
+                              backgroundColor: const Color.fromARGB(255, 35, 64, 225),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(20),
                               ),

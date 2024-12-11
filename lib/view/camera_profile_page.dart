@@ -75,33 +75,38 @@ class _CameraViewState extends State<CameraView> {
               }
             },
           ),
-          // Menempatkan tombol switch kamera di bagian bawah tengah
+          // Tombol untuk mengganti kamera
           Align(
-            alignment: Alignment.bottomCenter,
+            alignment: Alignment.bottomLeft,
             child: Padding(
-              padding: const EdgeInsets.only(bottom: 20),
+              padding: const EdgeInsets.only(left: 10, bottom: 100),
               child: FloatingActionButton(
+                backgroundColor: const Color(0xFF6A9AB0),
                 onPressed: _switchCamera,
-                child: const Icon(Icons.switch_camera),
+                child: const Icon(Icons.switch_camera, color: Color(0xFF001F3F)),
               ),
             ),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          try {
-            await _initializeCameraFuture;
+      floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(left: 5, bottom: 20),
+        child: FloatingActionButton(
+          backgroundColor: const Color(0xFF6A9AB0),
+          onPressed: () async {
+            try {
+              await _initializeCameraFuture;
 
-            // Mengambil gambar
-            final image = await _cameraController.takePicture();
+              final image = await _cameraController.takePicture();
 
-            Navigator.of(context).pop(image.path);
-          } catch (e) {
-            print(e);
-          }
-        },
-        child: const Icon(Icons.camera_alt),
+              Navigator.of(context).pop(image.path);
+            } catch (e) {
+              print(e);
+            }
+          },
+          child: const Icon(Icons.camera_alt, color: Color(0xFF001F3F)),
+        ),
       ),
     );
   }
