@@ -114,7 +114,7 @@ class _RegisterPageState extends State<RegisterPage> {
       return false;
   }
 
-    if (_passwordController.text.length < 8 && !_passwordController.text.contains('%') || !_passwordController.text.contains('&')) {
+    if (_passwordController.text.length < 8 && !_passwordController.text.contains('%') && !_passwordController.text.contains('&')) {
       _showMessage('Password must be at least 8 characters and contains % or &', isError: true);
       return false;
     }
