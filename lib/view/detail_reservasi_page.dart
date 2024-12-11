@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 
 class DetailReservasiPage extends StatelessWidget {
-  final Map<String, dynamic> reservasi;
+  final Map<String, dynamic> reservation;
 
-  const DetailReservasiPage({Key? key, required this.reservasi})
+  const DetailReservasiPage({Key? key, required this.reservation})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     String imagePath;
-    if (reservasi['barber'] == 'Ardha') {
+    if (reservation['barber'] == 'Ardha') {
       imagePath = 'lib/asset/1.jpg';
-    } else if (reservasi['barber'] == 'Dewa') {
+    } else if (reservation['barber'] == 'Dewa') {
       imagePath = 'lib/asset/2.jpg';
-    } else if (reservasi['barber'] == 'Hazel'){
+    } else if (reservation['barber'] == 'Hazel'){
       imagePath = 'lib/asset/3.jpg'; 
     }else{
       imagePath = 'lib/asset/4.jpg';
@@ -56,7 +56,7 @@ class DetailReservasiPage extends StatelessWidget {
             const SizedBox(height: 16.0),
             Center(
               child: Text(
-                'ATMA SALON - ${reservasi['service']}',
+                'ATMA SALON - ${reservation['service']}',
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -70,21 +70,21 @@ class DetailReservasiPage extends StatelessWidget {
               'DATE & TIME',
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
-            Text(reservasi['date']! + ' - ' + reservasi['time']!),
+            Text(reservation['date']! + ' - ' + reservation['time']!),
             const SizedBox(height: 16.0),
 
             Text(
               'SERVICES',
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
-            Text('${reservasi['service']} - Rp ${reservasi['price']}'),
+            Text('${reservation['service']} - Rp ${reservation['price']}'),
             const SizedBox(height: 16.0),
 
             Text(
               'BARBER',
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
-            Text(reservasi['barber']!),
+            Text(reservation['barber']!),
             const SizedBox(height: 20.0),
 
             // Tombol Kembali
